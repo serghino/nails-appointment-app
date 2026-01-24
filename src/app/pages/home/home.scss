@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 // Color Palette
 :root {
   --main-bg: #FDFBF9;         /* Primary light background */
@@ -139,7 +141,7 @@ $shadow-lg: 0 10px 30px rgba(94, 84, 82, 0.15);
     &:hover {
       transform: translateY(-2px);
       box-shadow: $shadow-lg;
-      background: darken($accent-color, 10%);
+      background: color.adjust($accent-color, $lightness: -10%);
     }
   }
 
@@ -392,7 +394,7 @@ section {
   transition: all 0.3s ease;
 
   &:hover {
-    color: darken(#B8756F, 10%);
+    color: color.adjust(#B8756F, $lightness: -10%);
     gap: 15px;
   }
 
@@ -651,7 +653,7 @@ section {
 
   &-description {
     font-size: 1.15rem;
-    color: lighten($text-dark, 15%);
+    color: color.adjust($text-dark, $lightness: 15%);
     line-height: 1.7;
     margin: 0 auto 40px;
     max-width: 700px;
@@ -664,7 +666,7 @@ section {
     padding: 16px 50px;
 
     &:hover {
-      background: darken($secondary-color, 10%);
+      background: color.adjust($secondary-color, $lightness: -10%);
       transform: translateY(-2px);
     }
   }
@@ -687,11 +689,11 @@ section {
     display: flex;
     align-items: center;
     gap: 10px;
-    color: lighten($text-dark, 10%);
+    color: color.adjust($text-dark, $lightness: 10%);
     font-size: 1rem;
 
     .contact-icon {
-      stroke: lighten($text-dark, 20%);
+      stroke: color.adjust($text-dark, $lightness: 20%);
       flex-shrink: 0;
     }
 
@@ -732,7 +734,7 @@ section {
     }
 
     p {
-      color: lighten($text-light, 20%);
+      color: color.adjust($text-light, $lightness: 20%);
       line-height: 1.6;
     }
 
@@ -744,7 +746,7 @@ section {
         margin-bottom: 10px;
 
         a {
-          color: lighten($text-light, 20%);
+          color: color.adjust($text-light, $lightness: 20%);
           text-decoration: none;
           cursor: pointer;
           transition: color 0.3s ease;
@@ -763,7 +765,7 @@ section {
     gap: 10px;
 
     .social-link {
-      color: lighten($text-light, 20%);
+      color: color.adjust($text-light, $lightness: 20%);
       text-decoration: none;
       transition: color 0.3s ease;
 
@@ -779,7 +781,7 @@ section {
     border-top: 1px solid rgba(255, 255, 255, 0.1);
 
     p {
-      color: lighten($text-light, 20%);
+      color: color.adjust($text-light, $lightness: 20%);
       margin: 0;
     }
   }
