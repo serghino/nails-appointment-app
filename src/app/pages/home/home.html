@@ -1,0 +1,207 @@
+<!-- Hero Section -->
+<section class="hero">
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <img src="/images/brand/brand.png" alt="Brand Logo" class="hero-logo">
+    <h1 class="hero-title">Beautiful Nails, Beautiful You</h1>
+    <p class="hero-subtitle">Premium nail care services in Montreal</p>
+    <div class="hero-buttons">
+      <button class="btn btn-primary" (click)="scrollToSection('services')">
+        View Services
+      </button>
+      <button class="btn btn-secondary" routerLink="/booking">
+        Book Appointment
+      </button>
+    </div>
+  </div>
+  <div class="hero-scroll">
+    <span>Scroll Down</span>
+    <div class="scroll-arrow">↓</div>
+  </div>
+</section>
+
+<!-- About Section -->
+<section class="about" id="about">
+  <div class="container">
+    <div class="about-layout">
+      <div class="about-images">
+        <button class="carousel-nav carousel-nav-left" (click)="prevPhoto()" aria-label="Previous photos">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+        @for (photo of visiblePhotos; track photo.id; let i = $index) {
+          <div class="about-photo" [class.about-photo-1]="i === 0" [class.about-photo-2]="i === 1">
+            <img [src]="photo.src" [alt]="photo.alt" class="photo-image">
+          </div>
+        }
+        <button class="carousel-nav carousel-nav-right" (click)="nextPhoto()" aria-label="Next photos">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+      </div>
+      <div class="about-info">
+        <span class="about-label">About Me</span>
+        <h2 class="about-title">Your Personal Nail Artist in Montreal</h2>
+        <p class="about-description">
+          Welcome! I'm a professional nail artist specializing in Russian manicure techniques, 
+          gel extensions, and stunning nail art. Using only premium products and the latest 
+          techniques, I ensure every client leaves with beautiful, long-lasting nails.
+        </p>
+        <div class="about-stats">
+          <div class="stat-card">
+            <h3 class="stat-number">10+</h3>
+            <p class="stat-label">Years Experience</p>
+          </div>
+          <div class="stat-card">
+            <h3 class="stat-number">100%</h3>
+            <p class="stat-label">Premium Products</p>
+          </div>
+        </div>
+        <a href="https://www.instagram.com/nails.artist.mtl" target="_blank" class="instagram-link">
+          <svg class="instagram-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+          </svg>
+          See my work on Instagram
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Services Section -->
+<section class="services" id="services">
+  <div class="container">
+    <div class="section-header">
+      <h2>Nail Services</h2>
+      <p class="section-description">
+        From classic manicures to gel extensions, we offer a complete range of nail care services tailored to your needs.
+      </p>
+    </div>
+    <div class="services-grid">
+      @for (service of services; track service.id) {
+        <div class="service-card">
+          <div class="service-header">
+            <h3 class="service-name">{{ service.name }}</h3>
+            <span class="service-price">{{ service.price }}</span>
+          </div>
+          <div class="service-meta">
+            <span class="service-category">{{ service.category }}</span>
+            <span class="service-duration">
+              <svg class="duration-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+              {{ service.duration }}
+            </span>
+          </div>
+          <p class="service-description">{{ service.description }}</p>
+          <button class="btn btn-primary" routerLink="/booking">Book Now</button>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- Gallery Section -->
+<section class="gallery" id="gallery">
+  <div class="container">
+    <div class="section-header">
+      <h2>Portfolio</h2>
+      <p class="section-description">
+        See the beautiful results we create for our clients
+      </p>
+    </div>
+    <div class="gallery-carousel">
+      <button class="carousel-nav carousel-nav-left" (click)="prevGalleryPhoto()" aria-label="Previous gallery photos">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
+      <div class="gallery-grid">
+        @for (image of visibleGalleryImages; track image.id; let i = $index) {
+          <div class="gallery-item" [class.gallery-item-1]="i === 0" [class.gallery-item-2]="i === 1" [class.gallery-item-3]="i === 2">
+            <img [src]="image.src" [alt]="image.alt" class="gallery-image">
+          </div>
+        }
+      </div>
+      <button class="carousel-nav carousel-nav-right" (click)="nextGalleryPhoto()" aria-label="Next gallery photos">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- Contact/CTA Section -->
+<section class="contact" id="contact">
+  <div class="container">
+    <div class="contact-label">Contact</div>
+    <h2 class="contact-heading">Ready to Book?</h2>
+    <p class="contact-description">
+      Schedule your appointment online and receive SMS confirmation and reminders. Easy, convenient, and hassle-free.
+    </p>
+    <button class="btn btn-primary btn-large" routerLink="/booking">
+      Book Online Now
+    </button>
+    <div class="contact-footer">
+      <div class="contact-footer-item">
+        <svg class="contact-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+          <circle cx="12" cy="10" r="3"></circle>
+        </svg>
+        <span>Montreal, QC</span>
+      </div>
+      <div class="contact-footer-item">
+        <svg class="contact-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+        <span>Mon-Fri: 10AM-7PM, Sat: 10AM-5PM</span>
+      </div>
+      <div class="contact-footer-item">
+        <svg class="contact-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+          <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+          <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+        </svg>
+        <a href="https://www.instagram.com/nails.artist.mtl" target="_blank">@nails.artist.mtl</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-content">
+      <div class="footer-section">
+        <h4>About Me</h4>
+        <p>Premium nail care services with attention to detail and customer satisfaction.</p>
+      </div>
+      <div class="footer-section">
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a (click)="scrollToSection('services')">Services</a></li>
+          <li><a (click)="scrollToSection('gallery')">Gallery</a></li>
+          <li><a routerLink="/booking">Book Appointment</a></li>
+          <li><a (click)="scrollToSection('contact')">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h4>Follow Me</h4>
+        <div class="social-links">
+          <a href="https://www.facebook.com/share/1GQunLAEcd" class="social-link">Facebook</a>
+          <a href="https://www.instagram.com/nails.artist.mtl" class="social-link">Instagram</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 Nail Salon Montreal. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
