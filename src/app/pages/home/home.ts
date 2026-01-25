@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { NAIL_SERVICE_CATALOG } from '../../models/service.model';
 
 interface Service {
   id: number;
@@ -20,88 +21,7 @@ interface Service {
 export class Home implements OnInit, OnDestroy {
   constructor(private cdr: ChangeDetectorRef) {}
 
-  services: Service[] = [
-    {
-      id: 1,
-      name: 'Dry E-file Manicure technique + Hard Gel Extension',
-      description: 'Gel color, Gels build the shape, Extension, Gel polish permanent + Russian manicure (Cuticle cleaning)',
-      price: '$100',
-      duration: '2h 30m',
-      category: 'Extensions'
-    },
-    {
-      id: 2,
-      name: 'Dry E-file Manicure technique + Gel polish (Shellac)',
-      description: 'Russian manicure Dry E-file Manicure technique with color gel polish',
-      price: '$70',
-      duration: '2h',
-      category: 'Manicure'
-    },
-    {
-      id: 3,
-      name: 'Pedicure combo technique + Gel polish (Shellac)',
-      description: 'Pedicure cleaning with color gel polish',
-      price: '$80',
-      duration: '2h',
-      category: 'Pedicure'
-    },
-    {
-      id: 4,
-      name: 'Pedicure combo technique (without any polish)',
-      description: 'No polish, just cleaning',
-      price: '$60',
-      duration: '1h 15m',
-      category: 'Pedicure'
-    },
-    {
-      id: 5,
-      name: 'Dry E-file Manicure technique (without any polish)',
-      description: 'No polish, just cleaning cuticle',
-      price: '$50',
-      duration: '1h',
-      category: 'Manicure'
-    },
-    {
-      id: 6,
-      name: 'Russian classic soak-off technique Manicure (without any polish)',
-      description: 'No polish, just cleaning cuticle',
-      price: '$50',
-      duration: '1h',
-      category: 'Manicure'
-    },
-    {
-      id: 7,
-      name: 'Nail Polish Permanent',
-      description: 'Gel polish, Shellac, Nail polish permanent',
-      price: '$20',
-      duration: '1h',
-      category: 'Polish'
-    },
-    {
-      id: 8,
-      name: 'Gel polish removal',
-      description: 'Gel polish removal which liquid or machine',
-      price: '$15',
-      duration: '30m',
-      category: 'Removal'
-    },
-    {
-      id: 9,
-      name: 'Gel extension removal',
-      description: 'Gel extension removal which a machine',
-      price: '$20',
-      duration: '1h',
-      category: 'Removal'
-    },
-    {
-      id: 10,
-      name: 'Nail Polish regular',
-      description: 'Regular Nail polish',
-      price: '$10',
-      duration: '30m',
-      category: 'Polish'
-    }
-  ];
+  services: Service[] = NAIL_SERVICE_CATALOG;
 
   workingHours = [
     { day: 'Monday - Friday', hours: '9:00 AM - 7:00 PM' },

@@ -1,0 +1,182 @@
+<div class="calendar-container">
+  <div class="calendar-header">
+    <h1>Book Your Appointment</h1>
+    <p>Select a service, date, and time to book your nail appointment</p>
+  </div>
+
+  <form [formGroup]="appointmentForm" (ngSubmit)="onSubmit()" class="appointment-form">
+    
+    <!-- Step 1: Service Selection -->
+    <mat-card class="form-section">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>spa</mat-icon>
+          Step 1: Choose Your Service
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Select Service(s)</mat-label>
+          <mat-select formControlName="service" multiple>
+            @for (service of services(); track service.id) {
+              <mat-option [value]="service.id">
+                <div class="service-option">
+                  <span class="service-name">{{ service.name }}</span>
+                  <span class="service-details">
+                    {{ service.duration }} · {{ service.price }}
+                  </span>
+                </div>
+              </mat-option>
+            }
+          </mat-select>
+          @if (appointmentForm.get('service')?.hasError('required')) {
+            <mat-error>
+              Please select a service
+            </mat-error>
+          }
+        </mat-form-field>
+
+        <!-- Selected Service Details -->
+        @if (selectedServices().length > 0) {
+          <div class="selected-service-info">
+            <div class="service-details-grid">
+              <div class="detail-item">
+                <mat-icon>schedule</mat-icon>
+                <span>{{ getTotalDuration() }}</span>
+              </div>
+              <div class="detail-item">
+                <mat-icon>attach_money</mat-icon>
+                <span>{{ getTotalPrice() }}</span>
+              </div>
+            </div>
+            <div class="selected-services-list">
+              @for (service of selectedServices(); track service.id) {
+                <div class="service-item">
+                  <strong>{{ service.name }}</strong>
+                  <span class="service-meta">{{ service.duration }} · {{ service.price }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Step 2: Date Selection -->
+    <mat-card class="form-section" [class.disabled]="selectedServices().length === 0">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>calendar_today</mat-icon>
+          Step 2: Choose Date
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Select Date</mat-label>
+          <input 
+            matInput 
+            [matDatepicker]="picker" 
+            formControlName="date"
+            [min]="minDate"
+            [matDatepickerFilter]="dateFilter"
+            placeholder="Choose a date">
+          <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+          @if (appointmentForm.get('date')?.hasError('required')) {
+            <mat-error>
+              Please select a date
+            </mat-error>
+          }
+        </mat-form-field>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Step 3: Time Slot Selection -->
+    <mat-card class="form-section" [class.disabled]="!appointmentForm.get('date')?.value">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>access_time</mat-icon>
+          Step 3: Choose Time
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        @if (availableTimeSlots().length > 0) {
+          <div class="time-slots-container">
+            <div class="time-slots-grid">
+              @for (slot of availableTimeSlots(); track slot.time) {
+                <button
+                  type="button"
+                  mat-stroked-button
+                  [class.selected]="appointmentForm.get('timeSlot')?.value === slot.time"
+                  [disabled]="!slot.available"
+                  (click)="appointmentForm.patchValue({ timeSlot: slot.time })"
+                  class="time-slot-button">
+                  <span class="slot-time">{{ slot.time }}</span>
+                  @if (selectedServices().length > 0 && appointmentForm.get('timeSlot')?.value === slot.time) {
+                    <span class="slot-duration">
+                      - {{ getEstimatedEndTime(slot.time) }}
+                    </span>
+                  }
+                </button>
+              }
+            </div>
+          
+          <div class="time-slots-legend">
+            <div class="legend-item">
+              <span class="legend-indicator available"></span>
+              <span>Available</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-indicator unavailable"></span>
+              <span>Unavailable</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-indicator selected"></span>
+              <span>Selected</span>
+            </div>
+          </div>
+          </div>
+        }
+
+        @if (appointmentForm.get('timeSlot')?.hasError('required')) {
+          <mat-error>
+            Please select a time slot
+          </mat-error>
+        }
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Step 4: Additional Notes (Optional) -->
+    <mat-card class="form-section">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>notes</mat-icon>
+          Additional Notes (Optional)
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Any special requests or notes?</mat-label>
+          <textarea 
+            matInput 
+            formControlName="notes"
+            rows="3"
+            placeholder="e.g., color preferences, specific nail art requests"></textarea>
+        </mat-form-field>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Submit Button -->
+    <div class="form-actions">
+      <button 
+        mat-raised-button 
+        color="primary" 
+        type="submit"
+        [disabled]="!appointmentForm.valid"
+        class="submit-button">
+        <mat-icon>check_circle</mat-icon>
+        Book Appointment
+      </button>
+    </div>
+  </form>
+</div>

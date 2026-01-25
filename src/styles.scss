@@ -1,4 +1,24 @@
 /* Global styles */
+@use '@angular/material' as mat;
+
+// Material 3 theme
+$theme: mat.define-theme((
+  color: (
+    theme-type: light,
+    primary: mat.$cyan-palette,
+  ),
+  typography: (
+    brand-family: 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif',
+    plain-family: 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif',
+  ),
+  density: (
+    scale: 0,
+  )
+));
+
+// Include all component themes
+@include mat.all-component-themes($theme);
+
 * {
   margin: 0;
   padding: 0;
