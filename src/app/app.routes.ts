@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 import { Home } from './pages/home/home';
-import { Calendar } from './pages/calendar/calendar';
+import { AppointmentsComponent } from './pages/appointments/appointments';
 
 export const routes: Routes = [
   {
@@ -9,8 +9,8 @@ export const routes: Routes = [
     title: 'Home - Nail Salon Montreal'
   },
   {
-    path: 'book',
-    component: Calendar,
+    path: 'appointments',
+    component: AppointmentsComponent,
     title: 'Book Appointment - Nail Salon Montreal'
   },
   {

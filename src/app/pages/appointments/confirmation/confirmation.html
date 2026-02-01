@@ -1,0 +1,159 @@
+<div class="confirmation-container">
+  <mat-card class="confirmation-card">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>check_circle</mat-icon>
+        Confirm Your Appointment
+      </mat-card-title>
+      <mat-card-subtitle>Please review your appointment details</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <!-- Services Section -->
+      <div class="section">
+        <div class="section-header">
+          <h3>
+            <mat-icon>spa</mat-icon>
+            Selected Services
+          </h3>
+          <button mat-icon-button color="primary" (click)="onEdit(0)">
+            <mat-icon>edit</mat-icon>
+          </button>
+        </div>
+        
+        @if (appointmentData.services.length > 0) {
+          <div class="services-list">
+            @for (service of appointmentData.services; track service.id) {
+              <mat-chip-row>
+                <mat-icon matChipAvatar>{{ service.icon || 'spa' }}</mat-icon>
+                <div class="service-details">
+                  <span class="service-name">{{ service.name }}</span>
+                  <span class="service-info">{{ service.duration }} • {{ service.price }}</span>
+                </div>
+              </mat-chip-row>
+            }
+          </div>
+          <div class="totals">
+            <div class="total-item">
+              <span>Total Duration:</span>
+              <strong>{{ getTotalDuration() }} minutes</strong>
+            </div>
+            <div class="total-item">
+              <span>Total Price:</span>
+              <strong>${{ getTotalPrice() }}</strong>
+            </div>
+          </div>
+        } @else {
+          <p class="empty-message">No services selected</p>
+        }
+      </div>
+
+      <mat-divider></mat-divider>
+
+      <!-- Date & Time Section -->
+      <div class="section">
+        <div class="section-header">
+          <h3>
+            <mat-icon>calendar_today</mat-icon>
+            Date & Time
+          </h3>
+          <button mat-icon-button color="primary" (click)="onEdit(0)">
+            <mat-icon>edit</mat-icon>
+          </button>
+        </div>
+        
+        <div class="info-group">
+          <div class="info-item">
+            <mat-icon>event</mat-icon>
+            <div>
+              <span class="label">Date</span>
+              <span class="value">{{ formatDate(appointmentData.date) }}</span>
+            </div>
+          </div>
+          <div class="info-item">
+            <mat-icon>schedule</mat-icon>
+            <div>
+              <span class="label">Time</span>
+              <span class="value">{{ appointmentData.timeSlot || 'Not selected' }}</span>
+            </div>
+          </div>
+        </div>
+
+        @if (appointmentData.notes) {
+          <div class="notes-section">
+            <span class="label">Notes:</span>
+            <p class="notes-text">{{ appointmentData.notes }}</p>
+          </div>
+        }
+      </div>
+
+      <mat-divider></mat-divider>
+
+      <!-- Contact Information Section -->
+      <div class="section">
+        <div class="section-header">
+          <h3>
+            <mat-icon>person</mat-icon>
+            Contact Information
+          </h3>
+          <button mat-icon-button color="primary" (click)="onEdit(1)">
+            <mat-icon>edit</mat-icon>
+          </button>
+        </div>
+        
+        <div class="info-group">
+          <div class="info-item">
+            <mat-icon>badge</mat-icon>
+            <div>
+              <span class="label">Name</span>
+              <span class="value">{{ appointmentData.user.name }} {{ appointmentData.user.lastname }}</span>
+            </div>
+          </div>
+          <div class="info-item">
+            <mat-icon>phone</mat-icon>
+            <div>
+              <span class="label">Phone</span>
+              <span class="value">{{ appointmentData.user.telephone }}</span>
+            </div>
+          </div>
+          @if (appointmentData.user.email) {
+            <div class="info-item">
+              <mat-icon>email</mat-icon>
+              <div>
+                <span class="label">Email</span>
+                <span class="value">{{ appointmentData.user.email }}</span>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </mat-card-content>
+
+    <mat-card-actions>
+      <div class="actions-container">
+        <button 
+          mat-stroked-button 
+          (click)="onBack()"
+          [disabled]="isSubmitting">
+          <mat-icon>arrow_back</mat-icon>
+          Back
+        </button>
+        <button 
+          mat-raised-button 
+          color="primary"
+          (click)="onConfirm()"
+          [disabled]="isSubmitting">
+          @if (isSubmitting) {
+            <mat-spinner diameter="20"></mat-spinner>
+            <span>Confirming...</span>
+          } @else {
+            <ng-container>
+              <mat-icon>check</mat-icon>
+              <span>Confirm Appointment</span>
+            </ng-container>
+          }
+        </button>
+      </div>
+    </mat-card-actions>
+  </mat-card>
+</div>

@@ -1,0 +1,53 @@
+.appointments-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+
+  .appointments-header {
+    text-align: center;
+    margin-bottom: 2rem;
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 0.5rem;
+    }
+
+    p {
+      font-size: 1.1rem;
+      color: #666;
+    }
+  }
+
+  .appointment-stepper {
+    background: transparent;
+
+    .step-content {
+      padding: 2rem 0;
+      min-height: 400px;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .appointments-container {
+    padding: 1rem;
+
+    .appointments-header {
+      h1 {
+        font-size: 1.8rem;
+      }
+
+      p {
+        font-size: 1rem;
+      }
+    }
+
+    .appointment-stepper {
+      .step-content {
+        padding: 1rem 0;
+      }
+    }
+  }
+}

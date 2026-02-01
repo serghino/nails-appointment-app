@@ -1,0 +1,82 @@
+<mat-card class="service-card">
+  <mat-card-header>
+    <mat-card-title>
+      <mat-icon>spa</mat-icon>
+      Choose Your Service
+    </mat-card-title>
+    <mat-card-subtitle>Select one or more services for your appointment</mat-card-subtitle>
+  </mat-card-header>
+
+  <mat-card-content>
+    <form [formGroup]="serviceForm" class="service-form">
+      <div class="services-container">
+        @for (service of services(); track service.id) {
+          <div class="service-item">
+            <mat-checkbox
+              [checked]="isServiceSelected(service.id)"
+              (change)="toggleService(service, $event)"
+              color="primary">
+              <div class="service-content">
+                <div class="service-header">
+                  <span class="service-name">{{ service.name }}</span>
+                </div>
+                <div class="service-meta">
+                  <span class="service-duration">
+                    <mat-icon>schedule</mat-icon>
+                    {{ service.duration }}
+                  </span>
+                  <span class="service-price">
+                    <mat-icon>attach_money</mat-icon>
+                    {{ service.price }}
+                  </span>
+                </div>
+              </div>
+            </mat-checkbox>
+          </div>
+        }
+      </div>
+      @if (serviceForm.get('service')?.hasError('required') && serviceForm.get('service')?.touched) {
+        <div class="error-message">
+          <mat-icon>error</mat-icon>
+          Please select at least one service
+        </div>
+      }
+
+      <!-- Selected Service Details -->
+      @if (selectedServices().length > 0) {
+        <div class="selected-service-info">
+          <div class="service-details-grid">
+            <div class="detail-item">
+              <mat-icon>schedule</mat-icon>
+              <span>{{ getTotalDuration() }}</span>
+            </div>
+            <div class="detail-item">
+              <mat-icon>attach_money</mat-icon>
+              <span>{{ getTotalPrice() }}</span>
+            </div>
+          </div>
+          <div class="selected-services-list">
+            @for (service of selectedServices(); track service.id) {
+              <div class="service-item">
+                <strong>{{ service.name }}</strong>
+                <span class="service-meta">{{ service.duration }} · {{ service.price }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <div class="form-actions">
+        <button 
+          mat-raised-button 
+          color="primary"
+          type="button"
+          (click)="onContinue()"
+          [disabled]="selectedServices().length === 0">
+          Continue
+          <mat-icon>arrow_forward</mat-icon>
+        </button>
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>

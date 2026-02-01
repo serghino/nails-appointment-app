@@ -1,0 +1,55 @@
+<div class="appointments-container">
+  <div class="appointments-header">
+    <h1>Book Your Appointment</h1>
+    <p>Follow the steps below to complete your booking</p>
+  </div>
+
+  <mat-stepper #stepper linear orientation="horizontal" class="appointment-stepper">
+    <!-- Step 1: Service Selection -->
+    <mat-step [completed]="step1Complete()" [editable]="step1Complete()">
+      <ng-template matStepLabel>Select Service</ng-template>
+      <div class="step-content">
+        <app-service-selection
+          (servicesSelected)="onServicesSelected($event)">
+        </app-service-selection>
+      </div>
+    </mat-step>
+
+    <!-- Step 2: Date & Time Selection -->
+    <mat-step [completed]="step2Complete()" [editable]="step2Complete()">
+      <ng-template matStepLabel>Select Date & Time</ng-template>
+      <div class="step-content">
+        <app-date-time-selection
+          [services]="selectedServices()"
+          (dateTimeSelected)="onDateTimeSelected($event)"
+          (back)="stepper.previous()">
+        </app-date-time-selection>
+      </div>
+    </mat-step>
+
+    <!-- Step 3: User Information -->
+    <mat-step [completed]="step3Complete()" [editable]="step3Complete()">
+      <ng-template matStepLabel>Your Information</ng-template>
+      <div class="step-content">
+        <app-user-info 
+          (userInfoCompleted)="onUserInfoCompleted($event)"
+          (back)="stepper.previous()">
+        </app-user-info>
+      </div>
+    </mat-step>
+
+    <!-- Step 4: Confirmation -->
+    <mat-step [editable]="false">
+      <ng-template matStepLabel>Confirmation</ng-template>
+      <div class="step-content">
+        <app-confirmation 
+          [appointmentData]="appointmentData()"
+          [isSubmitting]="isSubmitting()"
+          (confirm)="onConfirmAppointment()"
+          (edit)="onEditStep($event)"
+          (back)="stepper.previous()">
+        </app-confirmation>
+      </div>
+    </mat-step>
+  </mat-stepper>
+</div>

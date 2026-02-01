@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Appointment Booked</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333333;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #d81b60 0%, #c2185b 100%);
+            color: #ffffff;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .header .emoji {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        .content {
+            padding: 30px 20px;
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #d81b60;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #f5f5f5;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .info-row {
+            display: flex;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        .info-label {
+            font-weight: 600;
+            color: #666666;
+            min-width: 120px;
+            flex-shrink: 0;
+        }
+        .info-value {
+            color: #333333;
+            flex: 1;
+        }
+        .notes-box {
+            background-color: #fff8e1;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin-top: 10px;
+            border-radius: 4px;
+        }
+        .notes-box .label {
+            font-weight: 600;
+            color: #f57c00;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .notes-box .content {
+            color: #555555;
+            line-height: 1.6;
+            padding: 0;
+        }
+        .timestamp {
+            background-color: #f5f5f5;
+            padding: 15px 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #666666;
+            border-top: 1px solid #e0e0e0;
+        }
+        .timestamp strong {
+            color: #333333;
+        }
+        .footer {
+            background-color: #fafafa;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #999999;
+            border-top: 1px solid #e0e0e0;
+        }
+        .highlight {
+            color: #d81b60;
+            font-weight: 600;
+        }
+        @media only screen and (max-width: 600px) {
+            .email-container {
+                margin: 0;
+                border-radius: 0;
+            }
+            .content {
+                padding: 20px 15px;
+            }
+            .info-row {
+                flex-direction: column;
+                gap: 5px;
+            }
+            .info-label {
+                min-width: unset;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="emoji">🔔</div>
+            <h1>New Appointment Booked!</h1>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <!-- Customer Information Section -->
+            <div class="section">
+                <div class="section-title">
+                    <span>👤</span> Customer Information
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Name:</div>
+                    <div class="info-value highlight">{{customer_name}}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Phone:</div>
+                    <div class="info-value">{{customer_phone}}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Email:</div>
+                    <div class="info-value">{{customer_email}}</div>
+                </div>
+            </div>
+
+            <!-- Appointment Details Section -->
+            <div class="section">
+                <div class="section-title">
+                    <span>📅</span> Appointment Details
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Service(s):</div>
+                    <div class="info-value">{{services}}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Date:</div>
+                    <div class="info-value highlight">{{appointment_date}}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Time:</div>
+                    <div class="info-value highlight">{{appointment_time}}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Duration:</div>
+                    <div class="info-value">{{total_duration}}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Price:</div>
+                    <div class="info-value highlight">{{total_price}}</div>
+                </div>
+            </div>
+
+            <!-- Notes Section (Conditional) -->
+            {{#notes}}
+            <div class="section">
+                <div class="notes-box">
+                    <div class="label">📝 Customer Notes</div>
+                    <div class="content">{{notes}}</div>
+                </div>
+            </div>
+            {{/notes}}
+        </div>
+
+        <!-- Timestamp -->
+        <div class="timestamp">
+            ⏰ Booked at: <strong>{{booking_timestamp}}</strong>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            This is an automated notification from your appointment system.
+        </div>
+    </div>
+</body>
+</html>

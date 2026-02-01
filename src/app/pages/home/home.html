@@ -9,7 +9,7 @@
       <button class="btn btn-primary" (click)="scrollToSection('services')">
         View Services
       </button>
-      <button class="btn btn-secondary" routerLink="/book">
+      <button class="btn btn-secondary" routerLink="/appointments">
         Book Appointment
       </button>
     </div>
@@ -154,7 +154,10 @@
           <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
           <circle cx="12" cy="10" r="3"></circle>
         </svg>
-        <a [href]="business.mapsUrl" target="_blank">{{ business.address }}</a>
+        <a [href]="business.mapsUrl" target="_blank">
+          <div>{{ business.addressLine1 }}</div>
+          <div>{{ business.addressLine2 }} {{ business.postalCode }}</div>
+        </a>
       </div>
       <div class="contact-footer-item">
         <svg class="contact-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

@@ -1,0 +1,107 @@
+<mat-card class="datetime-card">
+  <mat-card-header>
+    <mat-card-title>
+      <mat-icon>calendar_today</mat-icon>
+      Choose Date & Time
+    </mat-card-title>
+    <mat-card-subtitle>Select your preferred date and time slot</mat-card-subtitle>
+  </mat-card-header>
+
+  <mat-card-content>
+    <form [formGroup]="dateTimeForm" class="datetime-form">
+      <!-- Date Selection -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Select Date</mat-label>
+        <input 
+          matInput 
+          [matDatepicker]="picker" 
+          formControlName="date"
+          [min]="minDate"
+          [matDatepickerFilter]="dateFilter"
+          placeholder="Choose a date">
+        <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+        @if (dateTimeForm.get('date')?.hasError('required') && dateTimeForm.get('date')?.touched) {
+          <mat-error>Please select a date</mat-error>
+        }
+        <mat-hint>Closed on Sundays</mat-hint>
+      </mat-form-field>
+
+      <!-- Time Slot Selection -->
+      @if (availableTimeSlots().length > 0) {
+        <div class="time-slots-section">
+          <h4>Available Times</h4>
+          <div class="time-slots-grid">
+            @for (slot of availableTimeSlots(); track slot.time) {
+              <button
+                type="button"
+                mat-stroked-button
+                [class.selected]="dateTimeForm.get('timeSlot')?.value === slot.time"
+                [disabled]="!slot.available"
+                (click)="dateTimeForm.patchValue({ timeSlot: slot.time })"
+                class="time-slot-button">
+                <span class="slot-time">{{ slot.time }}</span>
+                @if (services.length > 0 && dateTimeForm.get('timeSlot')?.value === slot.time) {
+                  <span class="slot-duration">
+                    - {{ getEstimatedEndTime(slot.time) }}
+                  </span>
+                }
+              </button>
+            }
+          </div>
+          
+          <div class="time-slots-legend">
+            <div class="legend-item">
+              <span class="legend-indicator available"></span>
+              <span>Available</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-indicator unavailable"></span>
+              <span>Unavailable</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-indicator selected"></span>
+              <span>Selected</span>
+            </div>
+          </div>
+        </div>
+      }
+
+      @if (dateTimeForm.get('timeSlot')?.hasError('required') && dateTimeForm.get('timeSlot')?.touched) {
+        <div class="error-message">
+          Please select a time slot
+        </div>
+      }
+
+      <!-- Notes -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Additional Notes (Optional)</mat-label>
+        <textarea 
+          matInput 
+          formControlName="notes"
+          rows="3"
+          placeholder="Any special requests or preferences"></textarea>
+      </mat-form-field>
+
+      <!-- Action Buttons -->
+      <div class="form-actions">
+        <button 
+          mat-stroked-button 
+          type="button"
+          (click)="onBack()">
+          <mat-icon>arrow_back</mat-icon>
+          Back
+        </button>
+        <button 
+          mat-raised-button 
+          color="primary"
+          type="button"
+          (click)="onContinue()"
+          [disabled]="!dateTimeForm.valid">
+          Continue
+          <mat-icon>arrow_forward</mat-icon>
+        </button>
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>

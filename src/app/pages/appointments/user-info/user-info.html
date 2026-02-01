@@ -1,0 +1,90 @@
+<mat-card class="user-info-card">
+  <mat-card-header>
+    <mat-card-title>
+      <mat-icon>person</mat-icon>
+      Your Information
+    </mat-card-title>
+    <mat-card-subtitle>Please provide your contact details</mat-card-subtitle>
+  </mat-card-header>
+
+  <mat-card-content>
+    <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="user-form">
+      <!-- Name Field -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>First Name</mat-label>
+        <input 
+          matInput 
+          formControlName="name"
+          placeholder="Enter your first name"
+          required>
+        <mat-icon matPrefix>badge</mat-icon>
+        @if (userForm.get('name')?.invalid && userForm.get('name')?.touched) {
+          <mat-error>{{ getErrorMessage('name') }}</mat-error>
+        }
+      </mat-form-field>
+
+      <!-- Last Name Field -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Last Name</mat-label>
+        <input 
+          matInput 
+          formControlName="lastname"
+          placeholder="Enter your last name"
+          required>
+        <mat-icon matPrefix>badge</mat-icon>
+        @if (userForm.get('lastname')?.invalid && userForm.get('lastname')?.touched) {
+          <mat-error>{{ getErrorMessage('lastname') }}</mat-error>
+        }
+      </mat-form-field>
+
+      <!-- Telephone Field -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Telephone Number</mat-label>
+        <input 
+          matInput 
+          formControlName="telephone"
+          placeholder="Enter your phone number"
+          required>
+        <mat-icon matPrefix>phone</mat-icon>
+        <mat-hint>Format: +1 (XXX) XXX-XXXX</mat-hint>
+        @if (userForm.get('telephone')?.invalid && userForm.get('telephone')?.touched) {
+          <mat-error>{{ getErrorMessage('telephone') }}</mat-error>
+        }
+      </mat-form-field>
+
+      <!-- Email Field -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Email</mat-label>
+        <input 
+          matInput 
+          type="email"
+          formControlName="email"
+          placeholder="Enter your email address"
+          required>
+        <mat-icon matPrefix>email</mat-icon>
+        <mat-hint>Required for appointment confirmation</mat-hint>
+        @if (userForm.get('email')?.invalid && userForm.get('email')?.touched) {
+          <mat-error>{{ getErrorMessage('email') }}</mat-error>
+        }
+      </mat-form-field>
+
+      <!-- Action Buttons -->
+      <div class="form-actions">
+        <button 
+          mat-stroked-button 
+          type="button"
+          (click)="onBack()">
+          <mat-icon>arrow_back</mat-icon>
+          Back
+        </button>
+        <button 
+          mat-raised-button 
+          color="primary"
+          type="submit">
+          Continue
+          <mat-icon>arrow_forward</mat-icon>
+        </button>
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>
