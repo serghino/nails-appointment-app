@@ -46,7 +46,7 @@ export class Calendar {
     this.appointmentForm = this.fb.group({
       service: [[], Validators.required],
       date: [{ value: '', disabled: true }, Validators.required],
-      timeSlot: ['', Validators.required],
+      timeSlot: [{ value: '', disabled: true }, Validators.required],
       notes: ['']
     });
 
@@ -59,12 +59,27 @@ export class Calendar {
         this.appointmentForm.get('date')?.enable();
       } else {
         this.appointmentForm.get('date')?.disable();
+        this.appointmentForm.get('timeSlot')?.disable();
+        this.appointmentForm.patchValue({ timeSlot: '' });
+        this.availableTimeSlots.set([]);
+      }
+      
+      // Recalculate available time slots if a date is already selected
+      const currentDate = this.appointmentForm.get('date')?.value;
+      if (currentDate && selectedServices.length > 0) {
+        this.updateAvailableTimeSlots(currentDate);
       }
     });
 
     this.appointmentForm.get('date')?.valueChanges.subscribe(date => {
+      // Clear time slot selection when date changes
+      this.appointmentForm.patchValue({ timeSlot: '' });
+      
       if (date) {
+        this.appointmentForm.get('timeSlot')?.enable();
         this.updateAvailableTimeSlots(date);
+      } else {
+        this.appointmentForm.get('timeSlot')?.disable();
       }
     });
   }
@@ -94,19 +109,38 @@ export class Calendar {
       endHour = 19;
     }
     
+    // Calculate total duration of selected services in minutes
+    let totalDurationMinutes = 0;
+    this.selectedServices().forEach(service => {
+      const hoursMatch = service.duration.match(/(\d+)h/);
+      const minutesMatch = service.duration.match(/(\d+)m/);
+      const hours = hoursMatch ? parseInt(hoursMatch[1]) : 0;
+      const minutes = minutesMatch ? parseInt(minutesMatch[1]) : 0;
+      totalDurationMinutes += (hours * 60) + minutes;
+    });
+    
     for (let hour = startHour; hour < endHour; hour++) {
       for (let minute = 0; minute < 60; minute += 30) {
         const time = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
         
         let available = true;
-        if (selectedDate.toDateString() === today.toDateString()) {
+        
+        // Check if appointment would extend beyond business hours
+        if (totalDurationMinutes > 0) {
+          const slotStartMinutes = hour * 60 + minute;
+          const appointmentEndMinutes = slotStartMinutes + totalDurationMinutes;
+          const closingTimeMinutes = endHour * 60;
+          
+          if (appointmentEndMinutes > closingTimeMinutes) {
+            available = false;
+          }
+        }
+        
+        // Check if slot is in the past for today's date
+        if (available && selectedDate.toDateString() === today.toDateString()) {
           const slotTime = new Date(selectedDate);
           slotTime.setHours(hour, minute, 0, 0);
           available = slotTime > today;
-        }
-        
-        if (available && Math.random() > 0.7) {
-          available = false;
         }
         
         slots.push({ time, available });

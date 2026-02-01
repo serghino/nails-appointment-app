@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { NAIL_SERVICE_CATALOG } from '../../models/service.model';
+import { environment } from '../../../environments/environment';
 
 interface Service {
   id: number;
@@ -22,6 +23,8 @@ export class Home implements OnInit, OnDestroy {
   constructor(private cdr: ChangeDetectorRef) {}
 
   services: Service[] = NAIL_SERVICE_CATALOG;
+  socialMedia = environment.socialMedia;
+  business = environment.business;
 
   workingHours = [
     { day: 'Monday - Friday', hours: '9:00 AM - 7:00 PM' },

@@ -72,15 +72,18 @@
   align-items: center;
   width: 100%;
   padding: 0.25rem 0;
+  gap: 1rem;
 
   .service-name {
     font-weight: 500;
     font-size: 1rem;
+    flex: 1;
   }
 
   .service-details {
     font-size: 0.875rem;
     color: #5E5452;
+    white-space: nowrap;
   }
 }
 
