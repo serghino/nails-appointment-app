@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { Home } from './pages/home/home';
 import { AppointmentsComponent } from './pages/appointments/appointments';
+import ROUTES from './models/routes';
 
 export const routes: Routes = [
   {
@@ -9,7 +10,7 @@ export const routes: Routes = [
     title: 'Home - Nail Salon Montreal'
   },
   {
-    path: 'appointments',
+    path: ROUTES.appointments,
     component: AppointmentsComponent,
     title: 'Book Appointment - Nail Salon Montreal'
   },

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { NAIL_SERVICE_CATALOG } from '../../models/service.model';
 import { environment } from '../../../environments/environment';
+import ROUTES from '../../models/routes';
 
 interface Service {
   id: number;
@@ -22,6 +23,7 @@ interface Service {
 export class Home implements OnInit, OnDestroy {
   constructor(private cdr: ChangeDetectorRef) {}
 
+  routes = ROUTES;
   services: Service[] = NAIL_SERVICE_CATALOG;
   socialMedia = environment.socialMedia;
   business = environment.business;

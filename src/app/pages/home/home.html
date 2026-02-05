@@ -9,7 +9,7 @@
       <button class="btn btn-primary" (click)="scrollToSection('services')">
         View Services
       </button>
-      <button class="btn btn-secondary" routerLink="/appointments">
+      <button class="btn btn-secondary" [routerLink]="'/' + routes.appointments">
         Book Appointment
       </button>
     </div>
@@ -99,7 +99,7 @@
             </span>
           </div>
           <p class="service-description">{{ service.description }}</p>
-          <button class="btn btn-primary" routerLink="/booking">Book Now</button>
+          <button class="btn btn-primary" [routerLink]="'/' + routes.appointments">Book Now</button>
         </div>
       }
     </div>
@@ -145,7 +145,7 @@
     <p class="contact-description">
       Schedule your appointment online and receive SMS confirmation and reminders. Easy, convenient, and hassle-free.
     </p>
-    <button class="btn btn-primary btn-large" routerLink="/booking">
+    <button class="btn btn-primary btn-large" [routerLink]="'/' + routes.appointments">
       Book Online Now
     </button>
     <div class="contact-footer">
@@ -191,7 +191,7 @@
         <ul>
           <li><a (click)="scrollToSection('services')">Services</a></li>
           <li><a (click)="scrollToSection('gallery')">Gallery</a></li>
-          <li><a routerLink="/booking">Book Appointment</a></li>
+          <li><a [routerLink]="'/' + routes.appointments">Book Appointment</a></li>
           <li><a (click)="scrollToSection('contact')">Contact</a></li>
         </ul>
       </div>
