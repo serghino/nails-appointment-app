@@ -155,8 +155,18 @@ export class Calendar {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const dayOfWeek = date.getDay();
-    // Disable Sundays (0)
-    return date >= today && dayOfWeek !== 0;
+    
+    // Block specific dates: February 7, 2026 (today) and February 9, 2026 (Monday)
+    const blockedDates = [
+      new Date(2026, 1, 7), // February 7, 2026 (month is 0-indexed)
+      new Date(2026, 1, 9)  // February 9, 2026
+    ];
+    
+    const dateStr = date.toDateString();
+    const isBlocked = blockedDates.some(blocked => blocked.toDateString() === dateStr);
+    
+    // Disable Sundays (0) and blocked dates
+    return date >= today && dayOfWeek !== 0 && !isBlocked;
   };
 
   onSubmit(): void {
