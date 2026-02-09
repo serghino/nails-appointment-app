@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import emailjs from '@emailjs/browser';
 import { environment } from '../../environments/environment';
-import { AppointmentData } from '../pages/appointments/models/appointment-data.model';
+import { AppointmentData } from '../models/appointment-data.model';
 import { SpamProtectionService } from './spam-protection.service';
 
 export interface EmailResult {
@@ -157,7 +157,7 @@ export class EmailNotificationService {
       customer_phone: data.user.telephone,
       services: services,
       appointment_date: this.formatDate(data.date),
-      appointment_time: data.timeSlot || 'Not specified',
+      appointment_time: data.timeSlot?.time || 'Not specified',
       total_duration: `${totalDuration} minutes`,
       total_price: `$${totalPrice}`,
       notes: data.notes || 'No special notes',
@@ -184,7 +184,7 @@ export class EmailNotificationService {
       customer_email: data.user.email || 'Not provided',
       services: services,
       appointment_date: this.formatDate(data.date),
-      appointment_time: data.timeSlot || 'Not specified',
+      appointment_time: data.timeSlot?.time || 'Not specified',
       total_duration: `${totalDuration} minutes`,
       total_price: `$${totalPrice}`,
       notes: data.notes || 'No special notes',

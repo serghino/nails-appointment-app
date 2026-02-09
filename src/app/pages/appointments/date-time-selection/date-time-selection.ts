@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, signal, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, Output, signal, OnInit, OnChanges, SimpleChanges, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { provideNativeDateAdapter } from '@angular/material/core';
@@ -8,12 +8,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
-import { Service } from '../../../models/service.model';
-
-interface TimeSlot {
-  time: string;
-  available: boolean;
-}
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { AppointmentService } from '../../../services/appointment.service';
+import { DateTimeData, Service, TimeSlot } from '../../../models/appointment-data.model';
 
 @Component({
   selector: 'app-date-time-selection',
@@ -25,7 +22,8 @@ interface TimeSlot {
     MatFormFieldModule,
     MatButtonModule,
     MatCardModule,
-    MatIconModule
+    MatIconModule,
+    MatProgressSpinnerModule
   ],
   providers: [provideNativeDateAdapter()],
   templateUrl: './date-time-selection.html',
@@ -33,12 +31,15 @@ interface TimeSlot {
 })
 export class DateTimeSelectionComponent implements OnInit, OnChanges {
   @Input() services: Service[] = [];
-  @Output() dateTimeSelected = new EventEmitter<any>();
+  @Output() dateTimeSelected = new EventEmitter<DateTimeData>();
   @Output() back = new EventEmitter<void>();
 
+  private appointmentService = inject(AppointmentService);
+  
   dateTimeForm: FormGroup;
   minDate = new Date();
   availableTimeSlots = signal<TimeSlot[]>([]);
+  isLoadingSlots = signal(false);
   private previousServiceIds: string = '';
 
   constructor(private fb: FormBuilder) {
@@ -58,7 +59,6 @@ export class DateTimeSelectionComponent implements OnInit, OnChanges {
   }
 
   ngOnInit(): void {
-    // Enable date field since services are already selected
     // Store initial service IDs
     this.previousServiceIds = this.getServiceIds();
   }
@@ -100,11 +100,49 @@ export class DateTimeSelectionComponent implements OnInit, OnChanges {
   }
 
   private getServiceIds(): string {
-    return this.services.map(s => s.id).sort().join(',');
-    this.dateTimeForm.get('date')?.enable();
+    return this.services.map(s => String(s.id)).sort().join(',');
   }
 
   private updateAvailableTimeSlots(date: Date): void {
+    if (!date || this.services.length === 0) {
+      this.availableTimeSlots.set([]);
+      return;
+    }
+
+    // Show loading state
+    this.isLoadingSlots.set(true);
+
+    // Get service IDs as strings
+    const serviceIds = this.services.map(s => String(s.id));
+
+    // Call the backend API
+    this.appointmentService.checkAvailability(date, serviceIds).subscribe({
+      next: (response) => {
+        // Map API response to TimeSlot format
+        const slots: TimeSlot[] = response.slots.map(slot => ({
+          time: slot.time,
+          available: slot.available,
+          endTime: slot.endTime
+        }));
+
+        this.availableTimeSlots.set(slots);
+        this.isLoadingSlots.set(false);
+      },
+      error: (error) => {
+        console.error('Error fetching availability:', error);
+        
+        // Fallback to client-side calculation if API fails
+        this.calculateClientSideAvailability(date);
+        this.isLoadingSlots.set(false);
+      }
+    });
+  }
+
+  /**
+   * Fallback method for client-side availability calculation
+   * Used when API call fails
+   */
+  private calculateClientSideAvailability(date: Date): void {
     const slots: TimeSlot[] = [];
     const selectedDate = new Date(date);
     const today = new Date();
@@ -155,11 +193,20 @@ export class DateTimeSelectionComponent implements OnInit, OnChanges {
           available = slotTime > today;
         }
         
-        slots.push({ time, available });
+        const endTime = this.calculateEndTime(time, totalDurationMinutes);
+        slots.push({ time, available, endTime });
       }
     }
     
     this.availableTimeSlots.set(slots);
+  }
+
+  private calculateEndTime(startTime: string, durationMinutes: number): string {
+    const [hours, minutes] = startTime.split(':').map(Number);
+    const endMinutes = minutes + durationMinutes;
+    const endHours = hours + Math.floor(endMinutes / 60);
+    const finalMinutes = endMinutes % 60;
+    return `${endHours.toString().padStart(2, '0')}:${finalMinutes.toString().padStart(2, '0')}`;
   }
 
   dateFilter = (date: Date | null): boolean => {

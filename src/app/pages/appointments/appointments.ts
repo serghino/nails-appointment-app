@@ -9,8 +9,7 @@ import { ServiceSelectionComponent } from './service-selection/service-selection
 import { DateTimeSelectionComponent } from './date-time-selection/date-time-selection';
 import { UserInfoComponent } from './user-info/user-info';
 import { ConfirmationComponent } from './confirmation/confirmation';
-import { AppointmentData } from './models/appointment-data.model';
-import { Service } from '../../models/service.model';
+import { AppointmentData, DateTimeData, Service, UserInfo } from '../../models/appointment-data.model';
 import { EmailNotificationService } from '../../services/email-notification.service';
 import { SpamProtectionService } from '../../services/spam-protection.service';
 
@@ -80,7 +79,7 @@ export class AppointmentsComponent implements OnInit {
     this.stepper.next();
   }
 
-  onDateTimeSelected(dateTimeData: any) {
+  onDateTimeSelected(dateTimeData: DateTimeData) {
     this.appointmentData.update(data => ({
       ...data,
       date: dateTimeData.date,
@@ -93,7 +92,7 @@ export class AppointmentsComponent implements OnInit {
     this.stepper.next();
   }
 
-  onUserInfoCompleted(userData: any) {
+  onUserInfoCompleted(userData: UserInfo) {
     this.appointmentData.update(data => ({
       ...data,
       user: userData

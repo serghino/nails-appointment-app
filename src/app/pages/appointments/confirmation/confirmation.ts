@@ -6,7 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { AppointmentData } from '../models/appointment-data.model';
+import { AppointmentData } from '../../../models/appointment-data.model';
 
 @Component({
   selector: 'app-confirmation',

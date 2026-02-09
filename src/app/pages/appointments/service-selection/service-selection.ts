@@ -7,7 +7,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import { Service, NAIL_SERVICE_CATALOG } from '../../../models/service.model';
+import { NAIL_SERVICE_CATALOG, Service } from '../../../models/appointment-data.model';
 
 @Component({
   selector: 'app-service-selection',

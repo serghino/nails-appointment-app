@@ -1,5 +1,6 @@
 export const environment = {
   production: false,
+  apiUrl: 'http://localhost:3001/api',
   business: {
     name: 'Mary Oak',
     email: 'maryoak.mtl@gmail.com', // Business email for customer replies

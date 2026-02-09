@@ -1,5 +1,6 @@
 export const environment = {
   production: true,
+  apiUrl: 'https://your-production-api-url.com/api', // Update with your actual API URL
   business: {
     name: 'Spa Tais - Beauty and Hair Salon',
     address: '2110 Boul. Saint-Laurent, Montreal, Quebec H2X 2T2',

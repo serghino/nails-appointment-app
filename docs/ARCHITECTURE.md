@@ -432,12 +432,14 @@
 5. ✅ Set up project structure
 6. ✅ Implement appointments component with stepper
 7. ✅ **Implement email notification system (MVP)**
-8. **Implement authentication component**
-9. **Set up Firebase/Supabase**
-10. **Create backend API**
-11. **Integrate notification services**
-12. **Implement admin dashboard**
-13. **Deploy to production**
+8. ✅ **Implement Appointments API backend (Express.js)**
+9. ✅ **Create Angular appointment service**
+10. ✅ **Update date-time component to consume API**
+11. **Set up database (Supabase or Firebase)**
+12. **Implement authentication component**
+13. **Integrate notification services**
+14. **Implement admin dashboard**
+15. **Deploy to production**
 
 ---
 
@@ -613,6 +615,145 @@ src/app/services/
 - Backend API for server-side email sending
 - Database integration for appointment persistence
 - SMS notifications via Twilio
+
+---
+
+### **Appointments API Backend** ✅
+
+A complete REST API backend built with Express.js and TypeScript for managing appointments and availability.
+
+**Implementation Details:**
+
+**Backend Structure:**
+```
+api/
+├── server.ts              # Main Express application
+├── appointments/
+│   └── index.ts           # Appointments routes & controllers
+├── tsconfig.json          # TypeScript configuration
+├── .env                   # Environment variables
+├── .env.example           # Environment template
+└── README.md              # API documentation
+```
+
+**API Endpoints Implemented:**
+- `GET /api/health` - Health check endpoint
+- `GET /api/appointments/availability` - Check available time slots for date/services
+- `GET /api/appointments` - Get user appointments (filtered by userId, status)
+- `POST /api/appointments` - Create new appointment
+- `PUT /api/appointments/:id` - Update existing appointment
+- `DELETE /api/appointments/:id` - Cancel appointment (12-hour rule enforced)
+- `GET /api/appointments/admin` - Get all appointments (admin only)
+
+**Features:**
+- **Business Hours Logic**
+  - Monday-Friday: 10:00 AM - 7:00 PM
+  - Saturday: 10:00 AM - 5:00 PM
+  - Closed on Sundays
+  - 30-minute time slot intervals
+
+- **Availability Checking**
+  - Dynamic slot generation based on service duration
+  - Prevents booking if appointment extends past closing time
+  - Filters past time slots on current day
+  - Returns available/unavailable status for each slot
+
+- **12-Hour Cancellation Rule**
+  - Enforced at API level with validation
+  - Returns clear error message with hours remaining
+  - Prevents cancellations within 12-hour window
+
+- **CORS Configuration**
+  - Configured for local development (localhost:4200)
+  - Ready for production URL configuration
+
+- **Error Handling**
+  - Comprehensive validation of request parameters
+  - Clear error messages with appropriate HTTP status codes
+  - Consistent JSON response format
+
+**Technology Stack:**
+- Express.js 5.x - Web framework
+- TypeScript - Type safety and better DX
+- CORS - Cross-origin resource sharing
+- Dotenv - Environment variable management
+- tsx - TypeScript execution in development
+
+**Development Scripts:**
+```bash
+npm run api:dev        # Start API in watch mode (port 3001)
+npm run api:build      # Compile TypeScript to JavaScript
+npm run api:start      # Run compiled production build
+npm run dev            # Run frontend + backend concurrently
+```
+
+**Angular Integration:**
+- Created `AppointmentService` in `src/app/services/`
+- HTTP client configured with environment-based API URL
+- Reactive service using RxJS Observables
+- Error handling with catchError operator
+- Type-safe interfaces for requests/responses
+
+**Date-Time Component Updates:**
+- Integrated with `AppointmentService` for real-time availability
+- Loading state with Material spinner during API calls
+- Fallback to client-side calculation if API fails
+- Enhanced UX with loading indicators
+
+**Current Status:**
+- ✅ API structure and routing complete
+- ✅ All endpoints implemented with mock responses
+- ✅ TypeScript compilation configured
+- ✅ Development environment ready
+- ✅ CORS and middleware configured
+- ✅ Frontend service integrated
+- ✅ Component updated to consume API
+- ⏳ Database integration pending (next step)
+- ⏳ Authentication pending
+- ⏳ Production deployment pending
+
+**Database Integration Plan:**
+- **Option 1: Supabase (Recommended)**
+  - Free tier: 500MB storage, unlimited requests
+  - PostgreSQL with real-time capabilities
+  - Built-in authentication
+  - Easy TypeScript client library
+
+- **Option 2: Firebase Firestore**
+  - Free tier: 1GB storage, 50K reads/day
+  - NoSQL document database
+  - Real-time listeners
+  - Good for rapid prototyping
+
+**Security Considerations:**
+- Environment variables for sensitive config
+- Request validation at API level
+- CORS restricted to known origins
+- Ready for JWT authentication integration
+- Input sanitization in place
+
+**API Documentation:**
+- Complete README in `api/README.md`
+- Request/response examples provided
+- Setup instructions included
+- Deployment guide for Netlify/Vercel/Railway
+
+**Testing:**
+- Health check endpoint operational
+- Availability endpoint tested with mock data
+- Ready for integration testing with database
+
+**Next Steps for Backend:**
+1. Choose and set up database (Supabase or Firebase)
+2. Implement database models and migrations
+3. Create database service layer
+4. Replace mock data with real database queries
+5. Add authentication middleware
+6. Implement rate limiting
+7. Add request validation library (express-validator)
+8. Set up logging (Winston or Morgan)
+9. Write unit tests
+10. Deploy to serverless platform
 
 ---
 
