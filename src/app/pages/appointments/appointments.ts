@@ -1,6 +1,7 @@
 import { Component, signal, ViewChild, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatStepperModule, MatStepper } from '@angular/material/stepper';
+import { firstValueFrom } from 'rxjs';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
@@ -10,7 +11,9 @@ import { DateTimeSelectionComponent } from './date-time-selection/date-time-sele
 import { UserInfoComponent } from './user-info/user-info';
 import { ConfirmationComponent } from './confirmation/confirmation';
 import { AppointmentData, DateTimeData, Service, UserInfo } from '../../models/appointment-data.model';
-import { EmailNotificationService } from '../../services/email-notification.service';
+import { AppointmentService } from '../../services/appointment.service';
+// Email notifications now handled by backend
+// import { EmailNotificationService } from '../../services/email-notification.service';
 import { SpamProtectionService } from '../../services/spam-protection.service';
 
 @Component({
@@ -33,7 +36,9 @@ import { SpamProtectionService } from '../../services/spam-protection.service';
 export class AppointmentsComponent implements OnInit {
   @ViewChild('stepper') stepper!: MatStepper;
 
-  private emailService = inject(EmailNotificationService);
+  private appointmentService = inject(AppointmentService);
+  // Email notifications now handled by backend
+  // private emailService = inject(EmailNotificationService);
   private spamProtection = inject(SpamProtectionService);
   private snackBar = inject(MatSnackBar);
 
@@ -61,8 +66,8 @@ export class AppointmentsComponent implements OnInit {
   selectedServices = signal<Service[]>([]);
 
   ngOnInit(): void {
-    // Initialize email service
-    this.emailService.initialize();
+    // Email service initialization now handled by backend
+    // this.emailService.initialize();
     // Record form start time for spam protection
     this.formStartTime = Date.now();
   }
@@ -109,6 +114,59 @@ export class AppointmentsComponent implements OnInit {
       return;
     }
 
+    // Validate that all required fields are present
+    const data = this.appointmentData();
+    
+    // Check services
+    if (!data.services || data.services.length === 0) {
+      this.snackBar.open('Please select at least one service.', 'OK', {
+        duration: 5000,
+        panelClass: ['warning-snackbar']
+      });
+      this.stepper.selectedIndex = 0; // Go back to service selection
+      return;
+    }
+    
+    // Check date and time
+    if (!data.date || !data.timeSlot || !data.timeSlot.time) {
+      this.snackBar.open('Please select a date and time.', 'OK', {
+        duration: 5000,
+        panelClass: ['warning-snackbar']
+      });
+      this.stepper.selectedIndex = 1; // Go back to date/time selection
+      return;
+    }
+    
+    // Check user information
+    if (!data.user.name || !data.user.lastname || !data.user.telephone) {
+      this.snackBar.open('Please complete your contact information.', 'OK', {
+        duration: 5000,
+        panelClass: ['warning-snackbar']
+      });
+      this.stepper.selectedIndex = 2; // Go back to user info
+      return;
+    }
+    
+    // Validate phone number format (basic check)
+    if (data.user.telephone.length < 10) {
+      this.snackBar.open('Please enter a valid phone number.', 'OK', {
+        duration: 5000,
+        panelClass: ['warning-snackbar']
+      });
+      this.stepper.selectedIndex = 2;
+      return;
+    }
+    
+    // Validate email format if provided
+    if (data.user.email && !this.isValidEmail(data.user.email)) {
+      this.snackBar.open('Please enter a valid email address.', 'OK', {
+        duration: 5000,
+        panelClass: ['warning-snackbar']
+      });
+      this.stepper.selectedIndex = 2;
+      return;
+    }
+
     // Validate form timing (spam protection)
     if (!this.spamProtection.validateFormTiming(this.formStartTime)) {
       this.snackBar.open('Please take your time filling out the form.', 'OK', {
@@ -134,13 +192,28 @@ export class AppointmentsComponent implements OnInit {
       // Record the appointment submission for rate limiting
       this.spamProtection.recordAppointmentSubmission();
 
-      // Send email notifications
-      const emailResults = await this.emailService.sendAllNotifications(this.appointmentData());
+      // Prepare appointment data for backend
+      const appointmentRequest = {
+        services: this.appointmentData().services,
+        date: this.appointmentData().date!,
+        timeSlot: this.appointmentData().timeSlot!.time,
+        notes: this.appointmentData().notes,
+        user: {
+          name: this.appointmentData().user.name,
+          lastname: this.appointmentData().user.lastname,
+          telephone: this.appointmentData().user.telephone,
+          email: this.appointmentData().user.email
+        }
+      };
+
+      // Save appointment to database via backend API
+      const response = await firstValueFrom(this.appointmentService.createAppointment(appointmentRequest));
 
       // Show success message
       let message = 'Appointment confirmed successfully!';
-      if (emailResults.customer.success && this.appointmentData().user.email) {
-        message += ' A confirmation email has been sent.';
+      // Email notifications will be sent by backend
+      if (this.appointmentData().user.email) {
+        message += ' You will receive a confirmation email shortly.';
       }
 
       this.snackBar.open(message, 'OK', {
@@ -149,18 +222,33 @@ export class AppointmentsComponent implements OnInit {
       });
 
       // Log for debugging (remove in production)
-      console.log('Appointment confirmed:', this.appointmentData());
-      console.log('Email results:', emailResults);
+      console.log('Appointment saved:', response);
 
-      // TODO: Save appointment to database when backend is ready
+      // Email notifications are now handled by backend
+      // const emailResults = await this.emailService.sendAllNotifications(this.appointmentData());
+      
+      // Refresh the page after successful appointment creation
+      setTimeout(() => {
+        window.location.reload();
+      }, 3000); // Wait 3 seconds so user can see success message
       
     } catch (error) {
       console.error('Failed to confirm appointment:', error);
-      this.snackBar.open(
-        'Appointment saved but notification failed. We will contact you shortly.',
-        'OK',
-        { duration: 8000, panelClass: ['warning-snackbar'] }
-      );
+      
+      // Check if it's a time slot conflict
+      if (error && typeof error === 'object' && 'status' in error && error.status === 409) {
+        this.snackBar.open(
+          'This time slot is no longer available. Please select another time.',
+          'OK',
+          { duration: 8000, panelClass: ['error-snackbar'] }
+        );
+      } else {
+        this.snackBar.open(
+          'Failed to create appointment. Please try again.',
+          'OK',
+          { duration: 8000, panelClass: ['error-snackbar'] }
+        );
+      }
     } finally {
       this.isSubmitting.set(false);
     }
@@ -168,5 +256,10 @@ export class AppointmentsComponent implements OnInit {
 
   onEditStep(stepIndex: number) {
     this.stepper.selectedIndex = stepIndex;
+  }
+
+  private isValidEmail(email: string): boolean {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
   }
 }

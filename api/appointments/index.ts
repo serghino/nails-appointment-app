@@ -1,4 +1,12 @@
 import { Router, Request, Response } from 'express';
+import {
+  checkTimeSlotAvailability,
+  createAppointment,
+  createAppointmentServices,
+  DbAppointment,
+  DbAppointmentService,
+  getSupabaseClient
+} from '../db/supabase';
 
 const router = Router();
 
@@ -86,13 +94,27 @@ router.get('/availability', async (req: Request, res: Response) => {
         const closingTimeMinutes = endHour * 60;
 
         if (appointmentEndMinutes <= closingTimeMinutes) {
-          // TODO: Check database for existing appointments at this time
-          const isBooked = false; // Placeholder
+          const endTime = calculateEndTime(time, totalDurationMinutes);
+          
+          // Check database for existing appointments at this time
+          let isBooked = false;
+          try {
+            const isAvailable = await checkTimeSlotAvailability(
+              selectedDate.toISOString().split('T')[0],
+              time,
+              endTime
+            );
+            isBooked = !isAvailable;
+          } catch (dbError) {
+            console.error('Database check failed, assuming slot available:', dbError);
+            // If database check fails, assume available (fallback behavior)
+            isBooked = false;
+          }
 
           availableSlots.push({
             time,
             available: !isBooked,
-            endTime: calculateEndTime(time, totalDurationMinutes)
+            endTime: endTime
           });
         }
       }
@@ -154,6 +176,13 @@ router.post('/', async (req: Request, res: Response) => {
       });
     }
 
+    // Validate services array
+    if (!Array.isArray(services) || services.length === 0) {
+      return res.status(400).json({
+        error: 'Services must be a non-empty array'
+      });
+    }
+
     // Validate user contact info
     if (!user.name || !user.lastname || !user.telephone) {
       return res.status(400).json({
@@ -161,31 +190,132 @@ router.post('/', async (req: Request, res: Response) => {
       });
     }
 
-    // TODO: Check if time slot is still available
-    // TODO: Save to database
-    // TODO: Send notifications (email/SMS)
+    // Parse and validate date
+    const appointmentDate = new Date(date);
+    if (isNaN(appointmentDate.getTime())) {
+      return res.status(400).json({
+        error: 'Invalid date format'
+      });
+    }
 
-    const appointmentData = {
-      id: generateId(), // Temporary ID generator
-      services,
-      date,
+    // Validate timeSlot format (HH:MM)
+    if (!/^\d{2}:\d{2}$/.test(timeSlot)) {
+      return res.status(400).json({
+        error: 'Invalid time slot format. Expected HH:MM'
+      });
+    }
+
+    // Calculate total duration and price
+    let totalDurationMinutes = 0;
+    let totalPrice = 0;
+
+    for (const service of services) {
+      // Parse duration
+      const hoursMatch = service.duration.match(/(\d+)h/);
+      const minutesMatch = service.duration.match(/(\d+)m/);
+      const hours = hoursMatch ? parseInt(hoursMatch[1]) : 0;
+      const minutes = minutesMatch ? parseInt(minutesMatch[1]) : 0;
+      totalDurationMinutes += (hours * 60) + minutes;
+
+      // Parse price (remove $ and convert to number)
+      const price = parseInt(service.price.replace('$', ''));
+      totalPrice += price;
+    }
+
+    // Calculate end time
+    const endTime = calculateEndTime(timeSlot, totalDurationMinutes);
+
+    // Format date as YYYY-MM-DD for database
+    const formattedDate = appointmentDate.toISOString().split('T')[0];
+
+    // Check if time slot is still available
+    const isAvailable = await checkTimeSlotAvailability(
+      formattedDate,
       timeSlot,
-      notes,
-      user,
+      endTime
+    );
+
+    if (!isAvailable) {
+      return res.status(409).json({
+        error: 'Time slot is no longer available',
+        conflictDetails: {
+          date: formattedDate,
+          requestedTime: timeSlot,
+          endTime: endTime
+        }
+      });
+    }
+
+    // Prepare appointment data for database
+    const appointmentData: DbAppointment = {
+      appointment_date: formattedDate,
+      appointment_time: timeSlot,
+      end_time: endTime,
+      notes: notes || '',
       status: 'pending',
-      createdAt: new Date().toISOString()
+      customer_name: user.name,
+      customer_lastname: user.lastname,
+      customer_telephone: user.telephone,
+      customer_email: user.email || null,
+      total_price: totalPrice,
+      total_duration_minutes: totalDurationMinutes
     };
 
+    // Save appointment to database
+    const savedAppointment = await createAppointment(appointmentData);
+
+    // Prepare appointment services data
+    const appointmentServices: DbAppointmentService[] = services.map(service => ({
+      appointment_id: savedAppointment.id!,
+      service_id: service.id,
+      service_name: service.name,
+      service_duration: service.duration,
+      service_price: service.price
+    }));
+
+    // Save appointment services to database
+    await createAppointmentServices(appointmentServices);
+
+    // TODO: Send notifications (email/SMS) - will be implemented in backend
+
+    // Return success response
     res.status(201).json({
       success: true,
-      appointment: appointmentData,
-      message: 'Appointment created successfully (mock data - database integration pending)'
+      appointment: {
+        id: savedAppointment.id,
+        date: savedAppointment.appointment_date,
+        timeSlot: savedAppointment.appointment_time,
+        endTime: savedAppointment.end_time,
+        services: services,
+        notes: savedAppointment.notes,
+        user: {
+          name: savedAppointment.customer_name,
+          lastname: savedAppointment.customer_lastname,
+          telephone: savedAppointment.customer_telephone,
+          email: savedAppointment.customer_email
+        },
+        status: savedAppointment.status,
+        totalPrice: savedAppointment.total_price,
+        totalDuration: savedAppointment.total_duration_minutes,
+        createdAt: savedAppointment.created_at
+      },
+      message: 'Appointment created successfully'
     });
 
   } catch (error) {
     console.error('Error creating appointment:', error);
+    
+    // Check if it's a database connection error
+    if (error instanceof Error && error.message.includes('Supabase configuration')) {
+      return res.status(503).json({
+        error: 'Database service unavailable. Please check server configuration.',
+        details: error.message
+      });
+    }
+
     res.status(500).json({
-      error: 'Internal server error'
+      error: 'Internal server error',
+      message: error instanceof Error ? error.message : 'Unknown error occurred'
     });
   }
 });
@@ -294,10 +424,6 @@ function calculateEndTime(startTime: string, durationMinutes: number): string {
   const endHours = hours + Math.floor(endMinutes / 60);
   const finalMinutes = endMinutes % 60;
   return `${endHours.toString().padStart(2, '0')}:${finalMinutes.toString().padStart(2, '0')}`;
-}
-
-function generateId(): string {
-  return `apt_${Date.now()}_${Math.random().toString(36).substring(7)}`;
 }
 
 export default router;

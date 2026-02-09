@@ -57,7 +57,7 @@
             <mat-icon>calendar_today</mat-icon>
             Date & Time
           </h3>
-          <button mat-icon-button color="primary" (click)="onEdit(0)">
+          <button mat-icon-button color="primary" (click)="onEdit(1)">
             <mat-icon>edit</mat-icon>
           </button>
         </div>
@@ -74,7 +74,7 @@
             <mat-icon>schedule</mat-icon>
             <div>
               <span class="label">Time</span>
-              <span class="value">{{ appointmentData.timeSlot || 'Not selected' }}</span>
+              <span class="value">{{ appointmentData.timeSlot?.time || 'Not selected' }}</span>
             </div>
           </div>
         </div>
@@ -96,7 +96,7 @@
             <mat-icon>person</mat-icon>
             Contact Information
           </h3>
-          <button mat-icon-button color="primary" (click)="onEdit(1)">
+          <button mat-icon-button color="primary" (click)="onEdit(2)">
             <mat-icon>edit</mat-icon>
           </button>
         </div>

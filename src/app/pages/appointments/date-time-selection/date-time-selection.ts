@@ -231,9 +231,15 @@ export class DateTimeSelectionComponent implements OnInit, OnChanges {
   onContinue(): void {
     if (this.dateTimeForm.valid) {
       const formValue = this.dateTimeForm.value;
+      
+      // Find the full TimeSlot object from available slots
+      const selectedTimeSlot = this.availableTimeSlots().find(
+        slot => slot.time === formValue.timeSlot
+      );
+      
       this.dateTimeSelected.emit({
         date: formValue.date,
-        timeSlot: formValue.timeSlot,
+        timeSlot: selectedTimeSlot || { time: formValue.timeSlot, available: true, endTime: this.getEstimatedEndTime(formValue.timeSlot) },
         notes: formValue.notes
       });
     } else {
