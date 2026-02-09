@@ -101,7 +101,6 @@ export class DateTimeSelectionComponent implements OnInit, OnChanges {
 
   private getServiceIds(): string {
     return this.services.map(s => s.id).sort().join(',');
-    this.dateTimeForm.get('date')?.enable();
   }
 
   private updateAvailableTimeSlots(date: Date): void {
@@ -171,7 +170,8 @@ export class DateTimeSelectionComponent implements OnInit, OnChanges {
     // Block specific dates: February 7, 2026 (today) and February 9, 2026 (Monday)
     const blockedDates = [
       new Date(2026, 1, 7), // February 7, 2026 (month is 0-indexed)
-      new Date(2026, 1, 9)  // February 9, 2026
+      new Date(2026, 1, 9),  // February 9, 2026
+      new Date(2026, 1, 10)  // February 10, 2026
     ];
     
     const dateStr = date.toDateString();
