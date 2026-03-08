@@ -7,7 +7,7 @@ export interface DbAppointment {
   appointment_time: string;
   end_time: string;
   notes?: string;
-  status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
+  status: 'completed' | 'cancelled';
   customer_name: string;
   customer_lastname: string;
   customer_telephone: string;
@@ -60,8 +60,8 @@ export async function checkTimeSlotAvailability(
     .from('appointments')
     .select('id, appointment_time, end_time')
     .eq('appointment_date', date)
-    .in('status', ['pending', 'confirmed'])
-    .or(`and(appointment_time.lte.${endTime},end_time.gt.${startTime})`);
+    .in('status', ['completed'])
+    .or(`and(appointment_time.lt.${endTime},end_time.gt.${startTime})`);
 
   if (error) {
     console.error('Error checking availability:', error);

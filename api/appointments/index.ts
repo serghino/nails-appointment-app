@@ -4,8 +4,7 @@ import {
   createAppointment,
   createAppointmentServices,
   DbAppointment,
-  DbAppointmentService,
-  getSupabaseClient
+  DbAppointmentService
 } from '../db/supabase';
 
 const router = Router();
@@ -252,7 +251,7 @@ router.post('/', async (req: Request, res: Response) => {
       appointment_time: timeSlot,
       end_time: endTime,
       notes: notes || '',
-      status: 'pending',
+      status: 'completed',
       customer_name: user.name,
       customer_lastname: user.lastname,
       customer_telephone: user.telephone,
