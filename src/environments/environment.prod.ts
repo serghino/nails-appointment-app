@@ -13,12 +13,4 @@ export const environment = {
     instagram: 'https://www.instagram.com/maryoak.mtl?igsh=MWs4bmp2b2s3NmNsOQ==',
     facebook: 'https://www.facebook.com/share/1GQunLAEcd'
   },
-  // EmailJS Configuration for Production
-  // Set these values from your EmailJS dashboard
-   emailjs: {
-    publicKey: 'tqOofDkcq7LNN0DmP', // YOUR_EMAILJS_PUBLIC_KEY
-    serviceId: 'service_bqjgqh8', // YOUR_EMAILJS_SERVICE_ID
-    customerTemplateId: 'template_5u3mfik', // Template ID for customer confirmation
-    adminTemplateId: 'template_yjzktns'     // Template ID for admin notification
-  }
 };

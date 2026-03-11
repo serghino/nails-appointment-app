@@ -14,17 +14,4 @@ export const environment = {
     instagram: 'https://www.instagram.com/maryoak.mtl?igsh=MWs4bmp2b2s3NmNsOQ==',
     facebook: 'https://www.facebook.com/share/1GQunLAEcd'
   },
-  // EmailJS Configuration
-  // Sign up at https://www.emailjs.com/ (free tier: 200 emails/month)
-  // 1. Create an Email Service (Gmail, Outlook, etc.)
-  // 2. Create two Email Templates:
-  //    - Customer confirmation template (customerTemplateId)
-  //    - Admin notification template (adminTemplateId)
-  // 3. Get your Public Key from Account > API Keys
-  emailjs: {
-    publicKey: 'tqOofDkcq7LNN0DmP', // YOUR_EMAILJS_PUBLIC_KEY
-    serviceId: 'service_bqjgqh8', // YOUR_EMAILJS_SERVICE_ID
-    customerTemplateId: 'template_5u3mfik', // Template ID for customer confirmation
-    adminTemplateId: 'template_yjzktns'     // Template ID for admin notification
-  }
 };

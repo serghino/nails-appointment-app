@@ -265,10 +265,10 @@ TWILIO_ACCOUNT_SID=your_sid
 
 ## 📝 TODO for Production
 
-- [ ] Implement database layer (Supabase/Firebase)
+- [x] Implement database layer (Supabase)
+- [x] Implement email notifications (Gmail SMTP via Nodemailer)
 - [ ] Add authentication (JWT tokens)
 - [ ] Add authorization middleware
-- [ ] Implement email notifications (server-side)
 - [ ] Add SMS notifications (Twilio)
 - [ ] Add request validation (express-validator)
 - [ ] Add rate limiting
@@ -302,7 +302,11 @@ curl "http://localhost:3001/api/appointments/availability?date=2026-02-10T00:00:
 api/
 ├── server.ts              # Main Express app
 ├── appointments/
-│   └── index.ts           # Appointments routes
+│   └── index.ts           # Appointments routes + email trigger
+├── email/
+│   └── email.service.ts   # Nodemailer Gmail SMTP — sendAllNotifications()
+├── db/
+│   └── supabase.ts        # Supabase client and query helpers
 ├── tsconfig.json          # TypeScript config for API
 ├── .env                   # Environment variables (gitignored)
 └── .env.example           # Example environment file

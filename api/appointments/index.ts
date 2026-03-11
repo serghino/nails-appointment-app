@@ -6,6 +6,7 @@ import {
   DbAppointment,
   DbAppointmentService
 } from '../db/supabase';
+import { sendAllNotifications, AppointmentEmailData } from '../email/email.service';
 
 const router = Router();
 
@@ -275,7 +276,23 @@ router.post('/', async (req: Request, res: Response) => {
     // Save appointment services to database
     await createAppointmentServices(appointmentServices);
 
-    // TODO: Send notifications (email/SMS) - will be implemented in backend
+    // Send email notifications (fire-and-forget — does not block the 201 response)
+    const emailData: AppointmentEmailData = {
+      customerName: savedAppointment.customer_name,
+      customerLastname: savedAppointment.customer_lastname,
+      customerPhone: savedAppointment.customer_telephone,
+      customerEmail: savedAppointment.customer_email,
+      services: services.map((s: any) => ({ name: s.name, price: s.price, duration: s.duration })),
+      appointmentDate: savedAppointment.appointment_date,
+      appointmentTime: savedAppointment.appointment_time,
+      totalPrice: savedAppointment.total_price,
+      totalDurationMinutes: savedAppointment.total_duration_minutes,
+      notes: savedAppointment.notes || null,
+      bookingTimestamp: new Date().toLocaleString('en-CA', { timeZone: 'America/Toronto' })
+    };
+    sendAllNotifications(emailData).catch(err =>
+      console.error('Email notification error:', err)
+    );
 
     // Return success response
     res.status(201).json({

@@ -12,8 +12,6 @@ import { UserInfoComponent } from './user-info/user-info';
 import { ConfirmationComponent } from './confirmation/confirmation';
 import { AppointmentData, DateTimeData, Service, UserInfo } from '../../models/appointment-data.model';
 import { AppointmentService } from '../../services/appointment.service';
-// Email notifications now handled by backend
-// import { EmailNotificationService } from '../../services/email-notification.service';
 import { SpamProtectionService } from '../../services/spam-protection.service';
 
 @Component({
@@ -37,8 +35,6 @@ export class AppointmentsComponent implements OnInit {
   @ViewChild('stepper') stepper!: MatStepper;
 
   private appointmentService = inject(AppointmentService);
-  // Email notifications now handled by backend
-  // private emailService = inject(EmailNotificationService);
   private spamProtection = inject(SpamProtectionService);
   private snackBar = inject(MatSnackBar);
 
@@ -66,9 +62,6 @@ export class AppointmentsComponent implements OnInit {
   selectedServices = signal<Service[]>([]);
 
   ngOnInit(): void {
-    // Email service initialization now handled by backend
-    // this.emailService.initialize();
-    // Record form start time for spam protection
     this.formStartTime = Date.now();
   }
 
@@ -221,12 +214,6 @@ export class AppointmentsComponent implements OnInit {
         panelClass: ['success-snackbar']
       });
 
-      // Log for debugging (remove in production)
-      console.log('Appointment saved:', response);
-
-      // Email notifications are now handled by backend
-      // const emailResults = await this.emailService.sendAllNotifications(this.appointmentData());
-      
       // Refresh the page after successful appointment creation
       setTimeout(() => {
         window.location.reload();

@@ -1,8 +1,93 @@
 # Email Notification Setup Guide
 
-## 📧 MVP Email Notification System
+## 📧 Email Notification System
 
-This guide will help you set up the email notification system for your nail salon appointment application.
+Emails are sent **server-side** via the Express backend using **Nodemailer + Gmail SMTP**.
+No third-party email service account is required — just a Gmail App Password.
+
+---
+
+## ✅ What Is Implemented
+
+1. **Customer confirmation email** — sent when a booking is created (only if email address was provided)
+2. **Admin notification email** — sent to the business owner for every new booking
+3. **Spam protection** — rate limiting and form timing validation prevent bot abuse
+
+Both emails are triggered automatically inside `POST /api/appointments` after the appointment is saved to Supabase.
+
+---
+
+## 🚀 Setup Instructions
+
+### Step 1: Enable 2-Step Verification on Gmail
+
+1. Go to [myaccount.google.com](https://myaccount.google.com)
+2. **Security & sign-in** → **Google password** (confirm identity)
+3. Enable **2-Step Verification** (required for App Passwords)
+
+### Step 2: Create a Gmail App Password
+
+1. Go to [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords)
+2. Click **Create app password**
+3. Name it `Nails App` → click **Create**
+4. Copy the **16-character password** shown (no spaces)
+
+### Step 3: Configure Environment Variables
+
+Edit `api/.env`:
+
+```env
+# Email Configuration — Gmail SMTP
+GMAIL_USER=maryoak.mtl@gmail.com
+GMAIL_APP_PASSWORD=abcdefghijklmnop   # your 16-char app password, no spaces
+ADMIN_EMAIL=maryoak.mtl@gmail.com
+```
+
+For **Netlify production**, add these same three variables in:
+**Netlify Dashboard → Site Configuration → Environment Variables**
+
+---
+
+## 📁 File Structure
+
+```
+api/
+└── email/
+    └── email.service.ts    # sendCustomerConfirmation, sendAdminNotification, sendAllNotifications
+```
+
+`sendAllNotifications()` is called inside `api/appointments/index.ts` after a successful DB write.
+It runs **fire-and-forget** — an email failure never blocks or fails the booking response.
+
+---
+
+## 📊 Gmail Sending Limits
+
+| Limit | Amount |
+|---|---|
+| Emails per day | **500** |
+| Resets | Every 24 hours |
+
+For a nails salon this is more than enough (e.g. 50 bookings × 2 emails = 100/day).
+
+---
+
+## 🧪 Testing Locally
+
+1. Fill `api/.env` with your Gmail credentials (see Step 3 above)
+2. Run the full stack: `npm run dev`
+3. Book a test appointment at `http://localhost:4200/appointments`
+4. Both the customer and admin should receive emails within seconds
+5. Check **Spam/Junk** folder if emails don't appear in inbox
+
+---
+
+## 🔒 Security Notes
+
+- **Never commit `api/.env`** — it is gitignored
+- The App Password is specific to this app and can be revoked at any time in Google Account settings without changing your main Gmail password
+- In production, set env vars in the Netlify dashboard — never hardcode them in code
+
 
 ---
 
