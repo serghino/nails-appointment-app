@@ -2,7 +2,7 @@
   command = "npm run build"
 
 [build.environment]
-  SECRETS_SCAN_OMIT_KEYS = "NODE_ENV,PORT,ADMIN_EMAIL"
+  SECRETS_SCAN_OMIT_KEYS = "NODE_ENV,PORT,ADMIN_EMAIL,GMAIL_USER"
 
 [functions]
   directory = "netlify/functions"
