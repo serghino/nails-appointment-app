@@ -37,8 +37,12 @@ app.use(
 
 /**
  * Handle all other requests by rendering the Angular application.
+ * Skip /api/* so they are not handled by Angular SSR.
  */
 app.use((req, res, next) => {
+  if (req.path.startsWith('/api/')) {
+    return next();
+  }
   angularApp
     .handle(req)
     .then((response) =>
