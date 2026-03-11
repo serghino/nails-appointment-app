@@ -37,7 +37,7 @@ export class DateTimeSelectionComponent implements OnInit, OnChanges {
   private appointmentService = inject(AppointmentService);
   
   dateTimeForm: FormGroup;
-  minDate = new Date();
+  minDate = (() => { const d = new Date(); d.setDate(d.getDate() + 1); d.setHours(0, 0, 0, 0); return d; })();
   availableTimeSlots = signal<TimeSlot[]>([]);
   isLoadingSlots = signal(false);
   private previousServiceIds: string = '';
@@ -69,7 +69,6 @@ export class DateTimeSelectionComponent implements OnInit, OnChanges {
       
       // Check if services actually changed
       if (currentServiceIds !== this.previousServiceIds) {
-        console.log('Services changed, recalculating time slots...');
         this.previousServiceIds = currentServiceIds;
         
         // Get the current date
@@ -211,21 +210,13 @@ export class DateTimeSelectionComponent implements OnInit, OnChanges {
 
   dateFilter = (date: Date | null): boolean => {
     if (!date) return false;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date();
+    tomorrow.setHours(0, 0, 0, 0);
+    tomorrow.setDate(tomorrow.getDate() + 1);
     const dayOfWeek = date.getDay();
-    
-    // Block specific dates: February 7, 2026 (today) and February 9, 2026 (Monday)
-    const blockedDates = [
-      new Date(2026, 1, 7), // February 7, 2026 (month is 0-indexed)
-      new Date(2026, 1, 9)  // February 9, 2026
-    ];
-    
-    const dateStr = date.toDateString();
-    const isBlocked = blockedDates.some(blocked => blocked.toDateString() === dateStr);
-    
-    // Disable Sundays (0) and blocked dates
-    return date >= today && dayOfWeek !== 0 && !isBlocked;
+
+    // Disable today, past dates, and Sundays
+    return date >= tomorrow && dayOfWeek !== 0;
   };
 
   onContinue(): void {

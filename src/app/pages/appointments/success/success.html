@@ -1,0 +1,25 @@
+<div class="success-container">
+  <mat-card class="success-card">
+    <div class="success-header">
+      <div class="success-icon-wrapper">
+        <mat-icon class="success-icon">check_circle</mat-icon>
+      </div>
+      <h1>Appointment Confirmed!</h1>
+      <p class="subtitle">Your booking has been successfully created.</p>
+
+      @if (bookingResponse?.appointment.user?.email) {
+        <p class="email-notice">
+          <mat-icon>email</mat-icon>
+          A confirmation email will be sent to <strong>{{ bookingResponse?.appointment.user.email }}</strong>
+        </p>
+      }
+    </div>
+
+    <mat-card-actions class="actions">
+      <button mat-flat-button color="primary" class="home-button" (click)="goHome()">
+        <mat-icon>home</mat-icon>
+        Go to Home
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</div>

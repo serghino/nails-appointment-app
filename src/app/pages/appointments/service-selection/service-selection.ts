@@ -26,6 +26,7 @@ import { NAIL_SERVICE_CATALOG, Service } from '../../../models/appointment-data.
 })
 export class ServiceSelectionComponent {
   @Output() servicesSelected = new EventEmitter<Service[]>();
+  @Output() servicesChanged = new EventEmitter<Service[]>();
 
   serviceForm: FormGroup;
   services = signal<Service[]>(NAIL_SERVICE_CATALOG);
@@ -69,6 +70,7 @@ export class ServiceSelectionComponent {
     // Update form control value
     const serviceIds = this.selectedServices().map(s => s.id);
     this.serviceForm.get('service')?.setValue(serviceIds);
+    this.servicesChanged.emit(this.selectedServices());
   }
 
   getTotalDuration(): string {

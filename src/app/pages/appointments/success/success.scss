@@ -1,0 +1,92 @@
+.success-container {
+  max-width: 700px;
+  margin: 0 auto;
+
+  .success-card {
+    border-radius: 12px;
+    overflow: hidden;
+
+    .success-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 2.5rem 2rem 2rem;
+      background: linear-gradient(135deg, #0d4236 0%, #1a6b56 100%);
+
+      .success-icon-wrapper {
+        background: #fff;
+        border-radius: 50%;
+        width: 80px;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.25rem;
+        box-shadow: 0 4px 16px rgba(76, 175, 80, 0.25);
+
+        .success-icon {
+          color: #4caf50;
+          font-size: 3rem;
+          width: 3rem;
+          height: 3rem;
+        }
+      }
+
+      h1 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0 0 0.5rem;
+      }
+
+      .subtitle {
+        font-size: 1rem;
+        color: #d4ede8;
+        margin: 0 0 1rem;
+      }
+
+      .email-notice {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(255, 255, 255, 0.75);
+        border-radius: 8px;
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+        color: #444;
+        margin: 0;
+
+        mat-icon {
+          font-size: 1.1rem;
+          width: 1.1rem;
+          height: 1.1rem;
+          color: #0d4236;
+        }
+      }
+    }
+
+    mat-card-actions.actions {
+      display: flex;
+      justify-content: center;
+      padding: 1.5rem;
+
+      .home-button {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 1rem;
+        padding: 0.5rem 2rem;
+        border-radius: 24px;
+        background-color: #0d4236;
+        color: #fff;
+
+        mat-icon {
+          font-size: 1.1rem;
+          width: 1.1rem;
+          height: 1.1rem;
+        }
+      }
+    }
+  }
+}

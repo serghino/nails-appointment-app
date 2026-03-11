@@ -10,6 +10,7 @@ import { ServiceSelectionComponent } from './service-selection/service-selection
 import { DateTimeSelectionComponent } from './date-time-selection/date-time-selection';
 import { UserInfoComponent } from './user-info/user-info';
 import { ConfirmationComponent } from './confirmation/confirmation';
+import { SuccessComponent } from './success/success';
 import { AppointmentData, DateTimeData, Service, UserInfo } from '../../models/appointment-data.model';
 import { AppointmentService } from '../../services/appointment.service';
 import { SpamProtectionService } from '../../services/spam-protection.service';
@@ -26,7 +27,8 @@ import { SpamProtectionService } from '../../services/spam-protection.service';
     MatSnackBarModule,
     MatProgressSpinnerModule,
     UserInfoComponent,
-    ConfirmationComponent
+    ConfirmationComponent,
+    SuccessComponent
   ],
   templateUrl: './appointments.html',
   styleUrl: './appointments.scss'
@@ -40,11 +42,13 @@ export class AppointmentsComponent implements OnInit {
 
   isSubmitting = signal(false);
   formStartTime = Date.now();
+  bookingResponse = signal<any>(null);
 
   // Step completion signals - set BEFORE calling stepper.next()
   step1Complete = signal(false);
   step2Complete = signal(false);
   step3Complete = signal(false);
+  appointmentBooked = signal(false);
 
   appointmentData = signal<AppointmentData>({
     services: [],
@@ -202,22 +206,11 @@ export class AppointmentsComponent implements OnInit {
       // Save appointment to database via backend API
       const response = await firstValueFrom(this.appointmentService.createAppointment(appointmentRequest));
 
-      // Show success message
-      let message = 'Appointment confirmed successfully!';
-      // Email notifications will be sent by backend
-      if (this.appointmentData().user.email) {
-        message += ' You will receive a confirmation email shortly.';
-      }
-
-      this.snackBar.open(message, 'OK', {
-        duration: 8000,
-        panelClass: ['success-snackbar']
-      });
-
-      // Refresh the page after successful appointment creation
-      setTimeout(() => {
-        window.location.reload();
-      }, 3000); // Wait 3 seconds so user can see success message
+      // Store response and navigate to success step (step 5)
+      this.bookingResponse.set(response);
+      this.appointmentBooked.set(true);
+      this.stepper.selected!.completed = true;
+      this.stepper.next();
       
     } catch (error) {
       console.error('Failed to confirm appointment:', error);
@@ -239,6 +232,10 @@ export class AppointmentsComponent implements OnInit {
     } finally {
       this.isSubmitting.set(false);
     }
+  }
+
+  onServicesLiveChanged(services: Service[]): void {
+    this.selectedServices.set(services);
   }
 
   onEditStep(stepIndex: number) {

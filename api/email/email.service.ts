@@ -60,6 +60,10 @@ function formatDuration(minutes: number): string {
   return `${m}m`;
 }
 
+function formatTime(timeStr: string): string {
+  return timeStr.substring(0, 5);
+}
+
 // ---------------------------------------------------------------------------
 // HTML builders
 // ---------------------------------------------------------------------------
@@ -141,7 +145,7 @@ function buildCustomerHtml(data: AppointmentEmailData): string {
           </div>
           <div class="info-row">
             <div class="info-label">Time:</div>
-            <div class="info-value"><strong>${data.appointmentTime}</strong></div>
+            <div class="info-value"><strong>${formatTime(data.appointmentTime)}</strong></div>
           </div>
           <div class="info-row">
             <div class="info-label">Duration:</div>
@@ -245,7 +249,7 @@ function buildAdminHtml(data: AppointmentEmailData): string {
         <div class="section-title">📅 Appointment Details</div>
         <div class="info-row"><div class="info-label">Service(s):</div><div class="info-value">${servicesList}</div></div>
         <div class="info-row"><div class="info-label">Date:</div><div class="info-value highlight">${formatDate(data.appointmentDate)}</div></div>
-        <div class="info-row"><div class="info-label">Time:</div><div class="info-value highlight">${data.appointmentTime}</div></div>
+        <div class="info-row"><div class="info-label">Time:</div><div class="info-value highlight">${formatTime(data.appointmentTime)}</div></div>
         <div class="info-row"><div class="info-label">Duration:</div><div class="info-value">${formatDuration(data.totalDurationMinutes)}</div></div>
         <div class="info-row"><div class="info-label">Price:</div><div class="info-value highlight">$${data.totalPrice}</div></div>
       </div>
@@ -273,7 +277,7 @@ export async function sendCustomerConfirmation(data: AppointmentEmailData): Prom
     await getTransporter().sendMail({
       from: `"${BUSINESS_NAME}" <${fromUser}>`,
       to: data.customerEmail,
-      subject: `Appointment Confirmed — ${formatDate(data.appointmentDate)} at ${data.appointmentTime}`,
+      subject: `Appointment Confirmed — ${formatDate(data.appointmentDate)} at ${formatTime(data.appointmentTime)}`,
       html: buildCustomerHtml(data)
     });
     return { success: true, message: 'Customer confirmation sent' };
@@ -297,7 +301,7 @@ export async function sendAdminNotification(data: AppointmentEmailData): Promise
       from: `"${BUSINESS_NAME} Appointments" <${fromUser}>`,
       to: adminEmail,
       replyTo: data.customerEmail || undefined,
-      subject: `New Booking: ${data.customerName} ${data.customerLastname} — ${formatDate(data.appointmentDate)} at ${data.appointmentTime}`,
+      subject: `New Booking: ${data.customerName} ${data.customerLastname} — ${formatDate(data.appointmentDate)} at ${formatTime(data.appointmentTime)}`,
       html: buildAdminHtml(data)
     });
     return { success: true, message: 'Admin notification sent' };
