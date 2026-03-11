@@ -16,10 +16,10 @@ const PORT = process.env['PORT'] || 3001;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// CORS configuration — DEPLOY_PRIME_URL is set automatically by Netlify for every context
-// (production, deploy previews, branch deploys). Falls back to FRONTEND_URL or localhost.
+// CORS configuration — allow localhost for dev and any Netlify subdomain for all deploy contexts
 const allowedOrigins = [
-  process.env['DEPLOY_PRIME_URL'],
+  process.env['URL'],              // primary site URL (e.g. https://maryoak.netlify.app)
+  process.env['DEPLOY_PRIME_URL'], // deploy preview URL (e.g. https://deploy-preview-1--maryoak.netlify.app)
   process.env['FRONTEND_URL'],
   'http://localhost:4200',
 ].filter(Boolean) as string[];
@@ -27,6 +27,8 @@ const allowedOrigins = [
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
+    // Accept any Netlify subdomain (covers all deploy previews automatically)
+    if (origin.endsWith('.netlify.app')) return callback(null, true);
     callback(null, allowedOrigins.includes(origin));
   },
   credentials: true,
@@ -63,8 +65,8 @@ app.use((err: any, req: Request, res: Response, next: any) => {
   });
 });
 
-// Start server (only if not in serverless mode)
-if (process.env['NODE_ENV'] !== 'production') {
+// Start server only when running locally — never in a Netlify/Lambda serverless environment
+if (!process.env['AWS_LAMBDA_FUNCTION_NAME'] && !process.env['NETLIFY_LOCAL']) {
   app.listen(PORT, () => {
     console.log(`🚀 Backend API running on http://localhost:${PORT}`);
     console.log(`📝 Appointments API: http://localhost:${PORT}/api/appointments`);
