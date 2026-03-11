@@ -8,11 +8,13 @@
   directory = "netlify/functions"
   node_bundler = "esbuild"
 
-# Route all /api/* requests to the Express function
+# Route all /api/* requests to the Express function — force = true ensures this
+# takes priority over the Angular SSR edge function
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/api/:splat"
   status = 200
+  force = true
 
 [[plugins]]
   package = "@netlify/angular-runtime"
