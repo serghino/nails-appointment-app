@@ -7,10 +7,10 @@ const serverlessHandler = serverlessHttp(app);
 export const handler = async (event: any, context: any) => {
   // Rewrite /.netlify/functions/api/foo -> /api/foo so Express routes match
   if (event.path?.startsWith('/.netlify/functions/api')) {
-    event.path = event.path.replace('/.netlify/functions/api', '') || '/';
+    event.path = event.path.replace('/.netlify/functions/api', '/api');
   }
   if (event.rawPath?.startsWith('/.netlify/functions/api')) {
-    event.rawPath = event.rawPath.replace('/.netlify/functions/api', '') || '/';
+    event.rawPath = event.rawPath.replace('/.netlify/functions/api', '/api');
   }
 
   console.log(`[api] ${event.httpMethod} ${event.path} | origin: ${event.headers?.['origin'] || 'none'}`);
