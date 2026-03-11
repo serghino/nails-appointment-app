@@ -12,7 +12,7 @@
 [[edge_functions]]
   function = "angular-ssr"
   path = "/*"
-  exclude_patterns = ["/api/*"]
+  excludedPath = "/api/*"
 
 # Route all /api/* requests to the Express Netlify Function
 [[redirects]]
