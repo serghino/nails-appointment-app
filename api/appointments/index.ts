@@ -276,7 +276,7 @@ router.post('/', async (req: Request, res: Response) => {
     // Save appointment services to database
     await createAppointmentServices(appointmentServices);
 
-    // Send email notifications (fire-and-forget — does not block the 201 response)
+    // Send email notifications
     const emailData: AppointmentEmailData = {
       customerName: savedAppointment.customer_name,
       customerLastname: savedAppointment.customer_lastname,
@@ -290,9 +290,10 @@ router.post('/', async (req: Request, res: Response) => {
       notes: savedAppointment.notes || null,
       bookingTimestamp: new Date().toLocaleString('en-CA', { timeZone: 'America/Toronto' })
     };
-    sendAllNotifications(emailData).catch(err =>
-      console.error('Email notification error:', err)
-    );
+    // Must be awaited — Lambda freezes the process once res.json() is called,
+    // so fire-and-forget never completes in a serverless environment.
+    const emailResults = await sendAllNotifications(emailData);
+    console.log('Email notifications result:', JSON.stringify(emailResults));
 
     // Return success response
     res.status(201).json({
