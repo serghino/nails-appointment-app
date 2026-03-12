@@ -6,17 +6,18 @@
 
   <mat-stepper #stepper linear orientation="horizontal" class="appointment-stepper">
     <!-- Step 1: Service Selection -->
-    <mat-step [completed]="step1Complete()" [editable]="step1Complete()">
+    <mat-step [completed]="step1Complete()" [editable]="step1Complete() && !appointmentBooked()">
       <ng-template matStepLabel>Select Service</ng-template>
       <div class="step-content">
         <app-service-selection
-          (servicesSelected)="onServicesSelected($event)">
+          (servicesSelected)="onServicesSelected($event)"
+          (servicesChanged)="onServicesLiveChanged($event)">
         </app-service-selection>
       </div>
     </mat-step>
 
     <!-- Step 2: Date & Time Selection -->
-    <mat-step [completed]="step2Complete()" [editable]="step2Complete()">
+    <mat-step [completed]="step2Complete()" [editable]="step2Complete() && !appointmentBooked()">
       <ng-template matStepLabel>Select Date & Time</ng-template>
       <div class="step-content">
         <app-date-time-selection
@@ -28,7 +29,7 @@
     </mat-step>
 
     <!-- Step 3: User Information -->
-    <mat-step [completed]="step3Complete()" [editable]="step3Complete()">
+    <mat-step [completed]="step3Complete()" [editable]="step3Complete() && !appointmentBooked()">
       <ng-template matStepLabel>Your Information</ng-template>
       <div class="step-content">
         <app-user-info 
@@ -49,6 +50,16 @@
           (edit)="onEditStep($event)"
           (back)="stepper.previous()">
         </app-confirmation>
+      </div>
+    </mat-step>
+
+    <!-- Step 5: Success -->
+    <mat-step [editable]="false">
+      <ng-template matStepLabel>Done</ng-template>
+      <div class="step-content">
+        <app-success
+          [bookingResponse]="bookingResponse()">
+        </app-success>
       </div>
     </mat-step>
   </mat-stepper>

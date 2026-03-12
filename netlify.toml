@@ -1,5 +1,25 @@
 [build]
   command = "npm run build"
 
+[build.environment]
+  SECRETS_SCAN_OMIT_KEYS = "NODE_ENV,PORT,ADMIN_EMAIL,GMAIL_USER"
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+# Exclude /api/* from the Angular SSR edge function so it reaches the redirect below
+[[edge_functions]]
+  function = "angular-ssr"
+  path = "/*"
+  excludedPath = "/api/*"
+
+# Route all /api/* requests to the Express Netlify Function
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+  force = true
+
 [[plugins]]
   package = "@netlify/angular-runtime"

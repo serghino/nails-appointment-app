@@ -5,6 +5,31 @@ export interface Service {
   duration: string;
   price: string;
   category: string;
+  icon?: string;
+}
+
+export interface UserInfo {
+  name: string;
+  lastname: string;
+  telephone: string;
+  email?: string;
+}
+
+export interface TimeSlot {
+  time: string;
+  available: boolean;
+  endTime?: string;
+}
+
+export interface DateTimeData {
+  date: Date | null;
+  timeSlot: TimeSlot | null;
+  notes: string;
+}
+
+export interface AppointmentData extends DateTimeData {
+  services: Service[];
+  user: UserInfo;
 }
 
 export const NAIL_SERVICE_CATALOG: Service[] = [

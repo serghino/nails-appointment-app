@@ -1,20 +1,20 @@
 # Nail Salon Appointment Application
 
-A modern, full-featured appointment booking system for nail salons built with Angular 17+ and Material Design.
+A modern, full-featured appointment booking system for nail salons built with Angular 21+ and Material Design.
 
 ## ✨ Features
 
 - 📅 **4-Step Booking Process** - Service selection, date/time, contact info, confirmation
-- 📧 **Email Notifications** - Automated customer confirmations and admin alerts
+- 📧 **Email Notifications** - Automated customer confirmations and admin alerts (server-side via Gmail SMTP)
 - 🛡️ **Spam Protection** - Multi-layer DOS/bot protection
 - 💅 **Material Design** - Beautiful, responsive UI
-- 🚀 **Zero Backend** - Frontend-only for MVP (EmailJS integration)
+- 🗄️ **Supabase Database** - PostgreSQL with real-time availability checking
 - 🆓 **Free Hosting** - Netlify-ready deployment
 - 📱 **Mobile Responsive** - Works on all devices
 
 ## 🚀 Quick Start
 
-See **[docs/EMAIL_SETUP.md](docs/EMAIL_SETUP.md)** for complete setup instructions!
+See **[docs/EMAIL_SETUP.md](docs/EMAIL_SETUP.md)** for email configuration and **[api/SETUP_SUPABASE.md](api/SETUP_SUPABASE.md)** for database setup.
 
 ## 📚 Documentation
 
@@ -22,20 +22,21 @@ All documentation is in the [`docs/`](docs/) folder.
 
 ### Essential Documentation
 
-- **[Email Setup Guide](docs/EMAIL_SETUP.md)** - Complete EmailJS configuration and troubleshooting
+- **[Email Setup Guide](docs/EMAIL_SETUP.md)** - Gmail SMTP configuration (Nodemailer)
 - **[Architecture](docs/ARCHITECTURE.md)** - System design, components, and technical details
+- **[Supabase Setup](api/SETUP_SUPABASE.md)** - Database setup guide
 
 ### 📧 Email Templates
 
-Professional HTML email templates ready to use with EmailJS:
+HTML email templates (used by the backend):
 - [customer-confirmation.html](docs/email-templates/customer-confirmation.html) - Customer appointment confirmation
 - [admin-notification.html](docs/email-templates/admin-notification.html) - Admin booking notification
 
 ### 🔗 External Resources
 
-- [EmailJS Documentation](https://www.emailjs.com/docs/)
 - [Angular Documentation](https://angular.dev/)
 - [Netlify Documentation](https://docs.netlify.com/)
+- [Supabase Documentation](https://supabase.com/docs)
 
 ---
 
@@ -45,48 +46,43 @@ _This project was generated using [Angular CLI](https://github.com/angular/angul
 
 ### Development server
 
-To start a local development server, run:
+To start a local development server (frontend + backend together), run:
 
 ```bash
-npm start
-# or
-ng serve
+npm run dev
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+- Angular frontend → `http://localhost:4200`
+- Express API → `http://localhost:3001`
 
 ### Building
 
-To build the project run:
-
 ```bash
-npm run build
-# or
-ng build
+npm run build        # Frontend only
+npm run build:all    # Frontend + Backend
 ```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
 
 ### Running unit tests
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
 ```bash
 npm test
-# or
-ng test
 ```
 
 ---
 
-## 📧 Email Configuration
+## ⚙️ Environment Variables
 
-Update these files with your EmailJS credentials:
-- `src/environments/environment.ts` (development)
-- `src/environments/environment.prod.ts` (production)
+Create `api/.env` (see `api/.env.example` for reference):
 
-See [docs/EMAIL_SETUP.md](docs/EMAIL_SETUP.md) for detailed instructions.
+```env
+PORT=3001
+SUPABASE_URL=your_supabase_url
+SUPABASE_ANON_KEY=your_supabase_key
+GMAIL_USER=your@gmail.com
+GMAIL_APP_PASSWORD=your_app_password
+ADMIN_EMAIL=your@gmail.com
+```
 
 ---
 
-**Built with ❤️ for [Sergio Escobar ](https://github.com/serghino)**
+**Built with ❤️ for [Sergio Escobar](https://github.com/serghino)**

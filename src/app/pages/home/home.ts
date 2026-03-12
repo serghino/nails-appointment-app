@@ -1,9 +1,9 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { NAIL_SERVICE_CATALOG } from '../../models/service.model';
 import { environment } from '../../../environments/environment';
 import ROUTES from '../../models/routes';
+import { NAIL_SERVICE_CATALOG } from '../../models/appointment-data.model';
 
 interface Service {
   id: number;
