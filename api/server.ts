@@ -16,8 +16,8 @@ app.use(express.urlencoded({ extended: true }));
 
 // CORS configuration — allow localhost for dev and any Netlify subdomain for all deploy contexts
 const allowedOrigins = [
-  process.env['URL'],              // primary site URL (e.g. https://maryoak.netlify.app)
-  process.env['DEPLOY_PRIME_URL'], // deploy preview URL (e.g. https://deploy-preview-1--maryoak.netlify.app)
+  process.env['URL'],              // primary site URL set automatically by Netlify
+  process.env['DEPLOY_PRIME_URL'], // deploy preview URL set automatically by Netlify
   process.env['FRONTEND_URL'],
   'http://localhost:4200',
 ].filter(Boolean) as string[];
