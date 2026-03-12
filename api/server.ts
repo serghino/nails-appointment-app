@@ -4,10 +4,8 @@ import dotenv from 'dotenv';
 import path from 'path';
 import appointmentsRouter from './appointments/index';
 
-// Load environment variables from api directory
+// Load environment variables for local development (no-op in production where vars come from Netlify)
 dotenv.config({ path: path.join(process.cwd(), 'api', '.env') });
-
-console.log('🚀 Starting API server...');
 
 const app: Express = express();
 const PORT = process.env['PORT'] || 3001;

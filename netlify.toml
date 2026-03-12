@@ -8,9 +8,6 @@
   directory = "netlify/functions"
   node_bundler = "esbuild"
 
-[functions.environment]
-  NODE_ENV = "production"
-
 # Exclude /api/* from the Angular SSR edge function so it reaches the redirect below
 [[edge_functions]]
   function = "angular-ssr"
