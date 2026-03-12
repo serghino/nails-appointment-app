@@ -1,5 +1,6 @@
 [build]
   command = "npm run build"
+  publish = "dist/nails-appointment-app/browser"
 
 [build.environment]
   SECRETS_SCAN_OMIT_KEYS = "NODE_ENV,PORT,ADMIN_EMAIL,GMAIL_USER"
