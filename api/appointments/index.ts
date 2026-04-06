@@ -7,6 +7,7 @@ import {
   DbAppointmentService
 } from '../db/supabase';
 import { sendAllNotifications, AppointmentEmailData } from '../email/email.service';
+import { calculateEndTime } from '../utils/time.utils';
 
 const router = Router();
 
@@ -129,31 +130,6 @@ router.get('/availability', async (req: Request, res: Response) => {
 
   } catch (error) {
     console.error('Error checking availability:', error);
-    res.status(500).json({
-      error: 'Internal server error'
-    });
-  }
-});
-
-/**
- * GET /api/appointments
- * Get all appointments for a user
- * Query params: userId (optional), status (optional)
- */
-router.get('/', async (req: Request, res: Response) => {
-  try {
-    const { userId, status } = req.query;
-
-    // TODO: Implement authentication and get userId from token
-    // TODO: Query database for user's appointments
-
-    res.json({
-      appointments: [],
-      message: 'Endpoint ready for database integration'
-    });
-
-  } catch (error) {
-    console.error('Error getting appointments:', error);
     res.status(500).json({
       error: 'Internal server error'
     });
@@ -336,111 +312,5 @@ router.post('/', async (req: Request, res: Response) => {
     });
   }
 });
-
-/**
- * PUT /api/appointments/:id
- * Update an existing appointment
- */
-router.put('/:id', async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const updates = req.body;
-
-    // TODO: Implement authentication
-    // TODO: Check if user owns this appointment
-    // TODO: Update in database
-
-    res.json({
-      success: true,
-      message: `Appointment ${id} updated (endpoint ready for implementation)`
-    });
-
-  } catch (error) {
-    console.error('Error updating appointment:', error);
-    res.status(500).json({
-      error: 'Internal server error'
-    });
-  }
-});
-
-/**
- * DELETE /api/appointments/:id
- * Cancel an appointment (with 12-hour check)
- */
-router.delete('/:id', async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-
-    // TODO: Get appointment from database
-    // TODO: Check if appointment exists and user owns it
-    
-    // Simulate appointment data for 12-hour check
-    const appointment = {
-      id,
-      date: '2026-02-10T14:00:00.000Z',
-      timeSlot: '14:00'
-    };
-
-    // Check 12-hour cancellation rule
-    const appointmentDateTime = new Date(`${appointment.date.split('T')[0]}T${appointment.timeSlot}`);
-    const now = new Date();
-    const hoursDifference = (appointmentDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
-
-    if (hoursDifference < 12) {
-      return res.status(400).json({
-        error: 'Cannot cancel appointment less than 12 hours before scheduled time',
-        hoursRemaining: Math.round(hoursDifference * 10) / 10
-      });
-    }
-
-    // TODO: Update appointment status to 'cancelled' in database
-    // TODO: Send cancellation notifications
-
-    res.json({
-      success: true,
-      message: 'Appointment cancelled successfully'
-    });
-
-  } catch (error) {
-    console.error('Error cancelling appointment:', error);
-    res.status(500).json({
-      error: 'Internal server error'
-    });
-  }
-});
-
-/**
- * GET /api/appointments/admin
- * Get all appointments (admin only)
- * Query params: date (optional), status (optional)
- */
-router.get('/admin', async (req: Request, res: Response) => {
-  try {
-    // TODO: Implement admin authentication
-    // TODO: Query all appointments from database
-
-    const { date, status } = req.query;
-
-    res.json({
-      appointments: [],
-      message: 'Admin endpoint ready for implementation'
-    });
-
-  } catch (error) {
-    console.error('Error getting admin appointments:', error);
-    res.status(500).json({
-      error: 'Internal server error'
-    });
-  }
-});
-
-// Helper functions
-function calculateEndTime(startTime: string, durationMinutes: number): string {
-  const [hours, minutes] = startTime.split(':').map(Number);
-  const endMinutes = minutes + durationMinutes;
-  const endHours = hours + Math.floor(endMinutes / 60);
-  const finalMinutes = endMinutes % 60;
-  return `${endHours.toString().padStart(2, '0')}:${finalMinutes.toString().padStart(2, '0')}`;
-}
 
 export default router;
