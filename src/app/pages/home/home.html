@@ -26,17 +26,19 @@
     <div class="about-layout">
       <div class="about-images">
         <button class="carousel-nav carousel-nav-left" (click)="prevPhoto()" aria-label="Previous photos">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
             <polyline points="15 18 9 12 15 6"></polyline>
           </svg>
         </button>
         @for (photo of visiblePhotos; track photo.id; let i = $index) {
-          <div class="about-photo" [class.about-photo-1]="i === 0" [class.about-photo-2]="i === 1">
-            <img [src]="photo.src" [alt]="photo.alt" class="photo-image">
-          </div>
+        <div class="about-photo" [class.about-photo-1]="i === 0" [class.about-photo-2]="i === 1">
+          <img [src]="photo.src" [alt]="photo.alt" class="photo-image">
+        </div>
         }
         <button class="carousel-nav carousel-nav-right" (click)="nextPhoto()" aria-label="Next photos">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
             <polyline points="9 18 15 12 9 6"></polyline>
           </svg>
         </button>
@@ -45,9 +47,13 @@
         <span class="about-label">About Me</span>
         <h2 class="about-title">Your Personal Nail Artist in Montreal</h2>
         <p class="about-description">
-          Welcome! I'm a professional nail artist specializing in Russian manicure techniques, 
-          gel extensions, and stunning nail art. Using only premium products and the latest 
-          techniques, I ensure every client leaves with beautiful, long-lasting nails.
+          Welcome! I'm Mary, a professional nail artist specializing in advanced E-file manicure techniques, durable gel
+          extensions, and creative nail art.
+        </p>
+        <p class="about-description">  
+          My top priority is your health and safety: I maintain the highest standards of sterilization and hygiene,
+          ensuring a clinical level of cleanliness for every tool and procedure. By combining this precision with the
+          latest industry trends, I deliver flawless, long-lasting results in a safe and comfortable environment.
         </p>
         <div class="about-stats">
           <div class="stat-card">
@@ -60,7 +66,8 @@
           </div>
         </div>
         <a [href]="socialMedia.instagram" target="_blank" class="instagram-link">
-          <svg class="instagram-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg class="instagram-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
             <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
             <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
@@ -78,29 +85,34 @@
     <div class="section-header">
       <h2>Nail Services</h2>
       <p class="section-description">
-        From classic manicures to gel extensions, we offer a complete range of nail care services tailored to your needs.
+        From classic manicures to gel extensions, we offer a complete range of nail care services tailored to your
+        needs.
       </p>
     </div>
     <div class="services-grid">
       @for (service of services; track service.id) {
-        <div class="service-card">
-          <div class="service-header">
-            <h3 class="service-name">{{ service.name }}</h3>
-            <span class="service-price">{{ service.price }}</span>
-          </div>
-          <div class="service-meta">
-            <span class="service-category">{{ service.category }}</span>
-            <span class="service-duration">
-              <svg class="duration-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <polyline points="12 6 12 12 16 14"></polyline>
-              </svg>
-              {{ service.duration }}
-            </span>
-          </div>
-          <p class="service-description">{{ service.description }}</p>
-          <button class="btn btn-primary" [routerLink]="'/' + routes.appointments">Book Now</button>
+      <div class="service-card">
+        <div class="service-header">
+          <h3 class="service-name">{{ service.name }}</h3>
+          <span class="service-price">{{ service.price }}</span>
         </div>
+        <div class="service-meta">
+          <span class="service-category">{{ service.category }}</span>
+          <span class="service-duration">
+            <svg class="duration-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            {{ service.duration }}
+          </span>
+        </div>
+        <p class="service-description">{{ service.description }}</p>
+        @if (service.note) {
+          <span class="service-note">{{ service.note }}</span>
+        }
+        <button class="btn btn-primary" [routerLink]="'/' + routes.appointments">Book Now</button>
+      </div>
       }
     </div>
   </div>
@@ -112,24 +124,27 @@
     <div class="section-header">
       <h2>Portfolio</h2>
       <p class="section-description">
-        See the beautiful results we create for our clients
+        See the beautiful results I create for my clients
       </p>
     </div>
     <div class="gallery-carousel">
       <button class="carousel-nav carousel-nav-left" (click)="prevGalleryPhoto()" aria-label="Previous gallery photos">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
           <polyline points="15 18 9 12 15 6"></polyline>
         </svg>
       </button>
       <div class="gallery-grid">
         @for (image of visibleGalleryImages; track image.id; let i = $index) {
-          <div class="gallery-item" [class.gallery-item-1]="i === 0" [class.gallery-item-2]="i === 1" [class.gallery-item-3]="i === 2">
-            <img [src]="image.src" [alt]="image.alt" class="gallery-image">
-          </div>
+        <div class="gallery-item" [class.gallery-item-1]="i === 0" [class.gallery-item-2]="i === 1"
+          [class.gallery-item-3]="i === 2">
+          <img [src]="image.src" [alt]="image.alt" class="gallery-image">
+        </div>
         }
       </div>
       <button class="carousel-nav carousel-nav-right" (click)="nextGalleryPhoto()" aria-label="Next gallery photos">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
           <polyline points="9 18 15 12 9 6"></polyline>
         </svg>
       </button>
@@ -143,14 +158,15 @@
     <div class="contact-label">Contact</div>
     <h2 class="contact-heading">Ready to Book?</h2>
     <p class="contact-description">
-      Schedule your appointment online and receive SMS confirmation and reminders. Easy, convenient, and hassle-free.
+      Schedule your appointment online to receive email confirmations and reminders. Simple, fast, and convenient.
     </p>
     <button class="btn btn-primary btn-large" [routerLink]="'/' + routes.appointments">
       Book Online Now
     </button>
     <div class="contact-footer">
       <div class="contact-footer-item">
-        <svg class="contact-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg class="contact-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
           <circle cx="12" cy="10" r="3"></circle>
         </svg>
@@ -160,14 +176,16 @@
         </a>
       </div>
       <div class="contact-footer-item">
-        <svg class="contact-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg class="contact-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="10"></circle>
           <polyline points="12 6 12 12 16 14"></polyline>
         </svg>
         <span>Mon-Fri: 10AM-7PM, Sat: 10AM-5PM</span>
       </div>
       <div class="contact-footer-item">
-        <svg class="contact-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg class="contact-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
           <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
           <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
