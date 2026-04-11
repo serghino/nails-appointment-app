@@ -60,13 +60,15 @@ router.get('/availability', async (req: Request, res: Response) => {
       '1': '2h 30m',
       '2': '2h',
       '3': '2h',
-      '4': '1h 15m',
+      '4': '2h',
       '5': '1h',
-      '6': '1h',
+      '6': '1h 30m',
       '7': '1h',
-      '8': '30m',
-      '9': '1h',
-      '10': '30m'
+      '8': '1h',
+      '9': '30m',
+      '10': '20m',
+      '11': '30m',
+      '12': '40m'
     };
 
     // Calculate total duration from actual services

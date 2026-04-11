@@ -17,23 +17,33 @@ dotenv.config({ path: path.join(process.cwd(), 'api', '.env') });
 
 const API_URL = 'http://localhost:3001/api';
 
+// Get next Wednesday from today (always a future, non-Sunday date)
+function getNextWednesday(): Date {
+  const today = new Date();
+  const daysUntilWednesday = (3 - today.getDay() + 7) % 7 || 7;
+  const nextWed = new Date(today);
+  nextWed.setDate(today.getDate() + daysUntilWednesday);
+  nextWed.setHours(0, 0, 0, 0);
+  return nextWed;
+}
+
 // Test data
 const testAppointment = {
   services: [
     {
       id: 2,
-      name: 'Dry E-file Manicure technique + Gel polish (Shellac)',
+      name: 'Manicure + Gel Polish (Shellac)',
       price: '$70',
       duration: '2h'
     },
     {
-      id: 8,
-      name: 'Gel polish removal',
-      price: '$15',
+      id: 11,
+      name: 'Gel Polish Removal',
+      price: '$20',
       duration: '30m'
     }
   ],
-  date: new Date('2026-02-12T00:00:00.000Z'), // Wednesday
+  date: getNextWednesday(), // Always next Wednesday
   timeSlot: '14:00',
   notes: 'Test appointment - please ignore',
   user: {

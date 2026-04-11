@@ -3,16 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import ROUTES from '../../models/routes';
-import { NAIL_SERVICE_CATALOG } from '../../models/appointment-data.model';
-
-interface Service {
-  id: number;
-  name: string;
-  description: string;
-  price: string;
-  duration: string;
-  category: string;
-}
+import { NAIL_SERVICE_CATALOG, Service } from '../../models/appointment-data.model';
 
 @Component({
   selector: 'app-home',
