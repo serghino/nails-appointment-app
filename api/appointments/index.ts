@@ -1,13 +1,14 @@
 import { Router, Request, Response } from 'express';
 import {
   checkTimeSlotAvailability,
+  getBookedSlotsForDate,
   createAppointment,
   createAppointmentServices,
   DbAppointment,
   DbAppointmentService
 } from '../db/supabase';
 import { sendAllNotifications, AppointmentEmailData } from '../email/email.service';
-import { calculateEndTime } from '../utils/time.utils';
+import { calculateEndTime, toMinutes } from '../utils/time.utils';
 
 const router = Router();
 
@@ -85,12 +86,21 @@ router.get('/availability', async (req: Request, res: Response) => {
       }
     }
 
+    // Fetch all booked appointments for the date in a single query
+    const dateString = selectedDate.toISOString().split('T')[0];
+    let bookedSlots: { appointment_time: string; end_time: string }[] = [];
+    try {
+      bookedSlots = await getBookedSlotsForDate(dateString);
+    } catch (dbError) {
+      console.error('Database fetch failed, assuming all slots available:', dbError);
+    }
+
     // Generate time slots
     const availableSlots = [];
     for (let hour = startHour; hour < endHour; hour++) {
       for (let minute = 0; minute < 60; minute += 30) {
         const time = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-        
+
         // Check if appointment would end before closing
         const slotStartMinutes = hour * 60 + minute;
         const appointmentEndMinutes = slotStartMinutes + totalDurationMinutes;
@@ -98,21 +108,14 @@ router.get('/availability', async (req: Request, res: Response) => {
 
         if (appointmentEndMinutes <= closingTimeMinutes) {
           const endTime = calculateEndTime(time, totalDurationMinutes);
-          
-          // Check database for existing appointments at this time
-          let isBooked = false;
-          try {
-            const isAvailable = await checkTimeSlotAvailability(
-              selectedDate.toISOString().split('T')[0],
-              time,
-              endTime
-            );
-            isBooked = !isAvailable;
-          } catch (dbError) {
-            console.error('Database check failed, assuming slot available:', dbError);
-            // If database check fails, assume available (fallback behavior)
-            isBooked = false;
-          }
+
+          // Check overlap in memory — no extra DB round trip per slot.
+          // DB times are "HH:MM:SS", loop times are "HH:MM"; compare as minutes.
+          const isBooked = bookedSlots.some((slot) => {
+            const bookedStart = toMinutes(slot.appointment_time);
+            const bookedEnd = toMinutes(slot.end_time);
+            return bookedStart < appointmentEndMinutes && bookedEnd > slotStartMinutes;
+          });
 
           availableSlots.push({
             time,

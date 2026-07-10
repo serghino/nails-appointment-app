@@ -72,6 +72,29 @@ export async function checkTimeSlotAvailability(
   return !data || data.length === 0;
 }
 
+/**
+ * Fetch all booked time ranges for a given date in a single query.
+ * Use this instead of calling checkTimeSlotAvailability in a loop.
+ */
+export async function getBookedSlotsForDate(
+  date: string
+): Promise<{ appointment_time: string; end_time: string }[]> {
+  const supabase = getSupabaseClient();
+
+  const { data, error } = await supabase
+    .from('appointments')
+    .select('appointment_time, end_time')
+    .eq('appointment_date', date)
+    .in('status', ['completed']);
+
+  if (error) {
+    console.error('Error fetching booked slots:', error);
+    throw new Error('Failed to fetch booked slots for date');
+  }
+
+  return data || [];
+}
+
 export async function createAppointment(
   appointmentData: DbAppointment
 ): Promise<DbAppointment> {
