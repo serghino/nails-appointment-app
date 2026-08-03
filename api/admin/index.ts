@@ -7,6 +7,7 @@ import {
   updateAppointmentStatus,
   DbAppointment
 } from '../db/supabase';
+import { IPaginated } from '../types/paginated';
 
 const router = Router();
 
@@ -20,8 +21,45 @@ router.use(requireAuth);
  */
 router.get('/appointments', async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const { date, status } = req.query;
+    const date = req.query['date'] as string | undefined;
+    const status = req.query['status'] as string | undefined;
+    const offsetParam = req.query['offset'];
+    const limitParam = req.query['limit'];
+
+    const offset =
+      offsetParam === undefined ? 0 : Number(Array.isArray(offsetParam) ? offsetParam[0] : offsetParam);
+    const limit =
+      limitParam === undefined ? 50 : Number(Array.isArray(limitParam) ? limitParam[0] : limitParam);
+
+    if (!Number.isInteger(offset) || offset < 0) {
+      res.status(400).json({ error: 'offset must be a non-negative integer' });
+      return;
+    }
+
+    if (!Number.isInteger(limit) || limit <= 0) {
+      res.status(400).json({ error: 'limit must be a positive integer' });
+      return;
+    }
+
     const supabase = getSupabaseClient();
+
+    let countQuery = supabase.from('appointments').select('id', { count: 'exact', head: true });
+
+    if (date) {
+      countQuery = countQuery.eq('appointment_date', date);
+    }
+
+    if (status) {
+      countQuery = countQuery.eq('status', status);
+    }
+
+    const { count, error: countError } = await countQuery;
+
+    if (countError) {
+      console.error('Error fetching appointment count:', countError);
+      res.status(500).json({ error: 'Failed to fetch appointments count' });
+      return;
+    }
 
     let query = supabase
       .from('appointments')
@@ -35,14 +73,15 @@ router.get('/appointments', async (req: AuthenticatedRequest, res: Response) => 
         )
       `)
       .order('appointment_date', { ascending: true })
-      .order('appointment_time', { ascending: true });
+      .order('appointment_time', { ascending: true })
+      .range(offset, offset + limit - 1);
 
     if (date) {
-      query = query.eq('appointment_date', date as string);
+      query = query.eq('appointment_date', date);
     }
 
     if (status) {
-      query = query.eq('status', status as string);
+      query = query.eq('status', status);
     }
 
     const { data, error } = await query;
@@ -53,7 +92,14 @@ router.get('/appointments', async (req: AuthenticatedRequest, res: Response) => 
       return;
     }
 
-    res.json({ appointments: data || [] });
+    const paginatedResponse: IPaginated & { appointments: unknown[] } = {
+      totalRecords: count ?? 0,
+      offset,
+      limit,
+      appointments: data || []
+    };
+
+    res.json(paginatedResponse);
   } catch (error) {
     console.error('Admin GET /appointments error:', error);
     res.status(500).json({ error: 'Internal server error' });

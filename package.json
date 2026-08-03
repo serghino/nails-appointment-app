@@ -7,6 +7,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "test:full-flow": "tsx api/test-full-flow.ts",
     "serve:ssr:nails-appointment-app": "node dist/nails-appointment-app/server/server.mjs",
     "api:dev": "tsx watch api/server.ts",
     "api:build": "tsc -p api/tsconfig.json",
