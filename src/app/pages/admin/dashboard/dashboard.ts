@@ -14,8 +14,10 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { AdminService, AdminAppointment, AppointmentStatus } from '../../../services/admin.service';
 import { AuthService } from '../../../services/auth.service';
+import { EditAppointmentDialogComponent } from '../edit-appointment-dialog/edit-appointment-dialog';
 import ROUTES from '../../../models/routes';
 
 @Component({
@@ -32,7 +34,8 @@ import ROUTES from '../../../models/routes';
     MatChipsModule,
     MatPaginatorModule,
     MatProgressSpinnerModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    MatDialogModule
   ],
   providers: [provideNativeDateAdapter()],
   templateUrl: './dashboard.html',
@@ -44,6 +47,7 @@ export class AdminDashboardComponent implements OnInit {
   private router = inject(Router);
   private snackBar = inject(MatSnackBar);
   private fb = inject(FormBuilder);
+  private dialog = inject(MatDialog);
 
   appointments = signal<AdminAppointment[]>([]);
   totalRecords = signal(0);
@@ -111,6 +115,36 @@ export class AdminDashboardComponent implements OnInit {
       return;
     }
     this.updateStatus(appointment, 'cancelled');
+  }
+
+  openEditDialog(appointment: AdminAppointment): void {
+    const dialogRef = this.dialog.open(EditAppointmentDialogComponent, {
+      data: { appointment },
+      width: '500px',
+      maxWidth: '95vw'
+    });
+
+    dialogRef.afterClosed().subscribe(payload => {
+      if (!payload) {
+        return;
+      }
+
+      this.processingId.set(appointment.id);
+      this.adminService.updateAppointment(appointment.id, payload).subscribe({
+        next: () => {
+          this.processingId.set(null);
+          this.snackBar.open('Appointment updated', 'Close', { duration: 3000, panelClass: ['success-snackbar'] });
+          this.loadAppointments();
+        },
+        error: (error) => {
+          this.processingId.set(null);
+          this.snackBar.open(error.message || 'Failed to update appointment', 'Close', {
+            duration: 4000,
+            panelClass: ['error-snackbar']
+          });
+        }
+      });
+    });
   }
 
   private updateStatus(appointment: AdminAppointment, status: AppointmentStatus): void {

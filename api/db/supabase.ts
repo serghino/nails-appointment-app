@@ -51,17 +51,25 @@ export function getSupabaseClient(): SupabaseClient {
 export async function checkTimeSlotAvailability(
   date: string,
   startTime: string,
-  endTime: string
+  endTime: string,
+  excludeAppointmentId?: string
 ): Promise<boolean> {
   const supabase = getSupabaseClient();
 
   // Query for overlapping appointments on the same date
-  const { data, error } = await supabase
+  let query = supabase
     .from('appointments')
     .select('id, appointment_time, end_time')
     .eq('appointment_date', date)
     .in('status', ['completed'])
     .or(`and(appointment_time.lt.${endTime},end_time.gt.${startTime})`);
+
+  // Exclude the appointment being edited so it doesn't conflict with itself
+  if (excludeAppointmentId) {
+    query = query.neq('id', excludeAppointmentId);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     console.error('Error checking availability:', error);
@@ -182,4 +190,55 @@ export async function updateAppointmentStatus(
     console.error('Error updating appointment status:', error);
     throw new Error('Failed to update appointment status');
   }
+}
+
+/**
+ * Update an appointment's date/time/services/notes/totals (admin reschedule/edit).
+ */
+export async function updateAppointmentDetails(
+  id: string,
+  updates: Partial<
+    Pick<
+      DbAppointment,
+      'appointment_date' | 'appointment_time' | 'end_time' | 'notes' | 'total_price' | 'total_duration_minutes'
+    >
+  >
+): Promise<DbAppointment> {
+  const supabase = getSupabaseClient();
+
+  const { data, error } = await supabase
+    .from('appointments')
+    .update({ ...updates, updated_at: new Date().toISOString() })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error updating appointment details:', error);
+    throw new Error('Failed to update appointment');
+  }
+
+  return data;
+}
+
+/**
+ * Replace all services linked to an appointment (used when editing an appointment's services).
+ */
+export async function replaceAppointmentServices(
+  appointmentId: string,
+  services: DbAppointmentService[]
+): Promise<DbAppointmentService[]> {
+  const supabase = getSupabaseClient();
+
+  const { error: deleteError } = await supabase
+    .from('appointment_services')
+    .delete()
+    .eq('appointment_id', appointmentId);
+
+  if (deleteError) {
+    console.error('Error removing previous appointment services:', deleteError);
+    throw new Error('Failed to update appointment services');
+  }
+
+  return createAppointmentServices(services);
 }

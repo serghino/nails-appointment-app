@@ -1,0 +1,72 @@
+$accent-color: #0D4236;
+$secondary-color: #B8938A;
+$bg-light: #F2E6E1;
+$text-dark: #5E5452;
+
+h2[mat-dialog-title] {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: $text-dark;
+
+  mat-icon {
+    color: $accent-color;
+  }
+}
+
+.edit-dialog-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 320px;
+  max-width: 480px;
+
+  .date-time-row {
+    display: flex;
+    gap: 1rem;
+
+    .date-field {
+      flex: 1.4;
+    }
+
+    .time-field {
+      flex: 1;
+    }
+  }
+
+  .full-width {
+    width: 100%;
+  }
+
+  .totals {
+    background: $bg-light;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+
+    .total-item {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+      color: $text-dark;
+
+      strong {
+        color: $accent-color;
+      }
+    }
+  }
+}
+
+mat-dialog-actions button mat-icon {
+  margin-right: 0.4rem;
+}
+
+@media (max-width: 480px) {
+  .edit-dialog-content {
+    min-width: 0;
+
+    .date-time-row {
+      flex-direction: column;
+    }
+  }
+}

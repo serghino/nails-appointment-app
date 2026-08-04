@@ -106,6 +106,13 @@
               }
 
               <div class="card-actions">
+                <button
+                  mat-stroked-button
+                  [disabled]="processingId() === appointment.id"
+                  (click)="openEditDialog(appointment)">
+                  <mat-icon>edit</mat-icon>
+                  Edit
+                </button>
                 @if (appointment.status !== 'completed') {
                   <button
                     mat-stroked-button

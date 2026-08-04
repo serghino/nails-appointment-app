@@ -37,6 +37,13 @@ export interface AdminAppointmentsResponse {
   appointments: AdminAppointment[];
 }
 
+export interface UpdateAppointmentPayload {
+  date: string;
+  timeSlot: string;
+  services: { id: number; name: string; duration: string; price: string }[];
+  notes?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -73,6 +80,18 @@ export class AdminService {
 
   updateStatus(id: string, status: AppointmentStatus): Observable<{ success: boolean }> {
     return this.http.patch<{ success: boolean }>(`${this.apiUrl}/admin/appointments/${id}/status`, { status }).pipe(
+      catchError(error => throwError(() => new Error(error.error?.error || 'Failed to update appointment')))
+    );
+  }
+
+  /**
+   * Reschedule an appointment and/or change its services
+   */
+  updateAppointment(id: string, payload: UpdateAppointmentPayload): Observable<{ success: boolean; appointment: AdminAppointment }> {
+    return this.http.put<{ success: boolean; appointment: AdminAppointment }>(
+      `${this.apiUrl}/admin/appointments/${id}`,
+      payload
+    ).pipe(
       catchError(error => throwError(() => new Error(error.error?.error || 'Failed to update appointment')))
     );
   }

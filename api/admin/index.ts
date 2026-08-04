@@ -5,8 +5,13 @@ import {
   getAppointmentById,
   getAppointmentServices,
   updateAppointmentStatus,
-  DbAppointment
+  updateAppointmentDetails,
+  replaceAppointmentServices,
+  checkTimeSlotAvailability,
+  DbAppointment,
+  DbAppointmentService
 } from '../db/supabase';
+import { calculateEndTime } from '../utils/time.utils';
 import { IPaginated } from '../types/paginated';
 
 const router = Router();
@@ -72,8 +77,8 @@ router.get('/appointments', async (req: AuthenticatedRequest, res: Response) => 
           service_price
         )
       `)
-      .order('appointment_date', { ascending: true })
-      .order('appointment_time', { ascending: true })
+      .order('appointment_date', { ascending: false })
+      .order('appointment_time', { ascending: false })
       .range(offset, offset + limit - 1);
 
     if (date) {
@@ -125,6 +130,89 @@ router.get('/appointments/:id', async (req: AuthenticatedRequest, res: Response)
     res.json({ appointment: { ...appointment, services } });
   } catch (error) {
     console.error('Admin GET /appointments/:id error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+/**
+ * PUT /api/admin/appointments/:id
+ * Reschedule an appointment and/or change its services.
+ * Body: { date: 'YYYY-MM-DD', timeSlot: 'HH:MM', services: [{ id, name, duration, price }], notes? }
+ */
+router.put('/appointments/:id', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const id = req.params['id'] as string;
+    const { date, timeSlot, services, notes } = req.body;
+
+    const existing = await getAppointmentById(id);
+    if (!existing) {
+      res.status(404).json({ error: 'Appointment not found' });
+      return;
+    }
+
+    if (!date || !timeSlot) {
+      res.status(400).json({ error: 'Missing required fields: date, timeSlot' });
+      return;
+    }
+
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      res.status(400).json({ error: 'Invalid date format. Expected YYYY-MM-DD' });
+      return;
+    }
+
+    if (!/^\d{2}:\d{2}$/.test(timeSlot)) {
+      res.status(400).json({ error: 'Invalid time slot format. Expected HH:MM' });
+      return;
+    }
+
+    if (!Array.isArray(services) || services.length === 0) {
+      res.status(400).json({ error: 'Services must be a non-empty array' });
+      return;
+    }
+
+    // Recompute totals from the submitted services rather than trusting client-sent totals
+    let totalDurationMinutes = 0;
+    let totalPrice = 0;
+
+    for (const service of services) {
+      const hoursMatch = String(service.duration).match(/(\d+)h/);
+      const minutesMatch = String(service.duration).match(/(\d+)m/);
+      const hours = hoursMatch ? parseInt(hoursMatch[1]) : 0;
+      const minutes = minutesMatch ? parseInt(minutesMatch[1]) : 0;
+      totalDurationMinutes += (hours * 60) + minutes;
+      totalPrice += parseInt(String(service.price).replace('$', ''));
+    }
+
+    const endTime = calculateEndTime(timeSlot, totalDurationMinutes);
+
+    const isAvailable = await checkTimeSlotAvailability(date, timeSlot, endTime, id);
+    if (!isAvailable) {
+      res.status(409).json({ error: 'Time slot is no longer available' });
+      return;
+    }
+
+    const updatedAppointment = await updateAppointmentDetails(id, {
+      appointment_date: date,
+      appointment_time: timeSlot,
+      end_time: endTime,
+      notes: notes ?? existing.notes,
+      total_price: totalPrice,
+      total_duration_minutes: totalDurationMinutes
+    });
+
+    const appointmentServices: DbAppointmentService[] = services.map((service: any) => ({
+      appointment_id: id,
+      service_id: service.id,
+      service_name: service.name,
+      service_duration: service.duration,
+      service_price: service.price
+    }));
+
+    const updatedServices = await replaceAppointmentServices(id, appointmentServices);
+
+    res.json({ success: true, appointment: { ...updatedAppointment, appointment_services: updatedServices } });
+  } catch (error) {
+    console.error('Admin PUT /appointments/:id error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
