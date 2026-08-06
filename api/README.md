@@ -55,6 +55,21 @@ GET /api/health
 ```
 Returns API status, timestamp, and current environment.
 
+### Admin Login
+```
+POST /api/auth/login
+```
+**Body:**
+```json
+{ "username": "admin", "password": "your_password" }
+```
+
+**Response:**
+```json
+{ "token": "eyJhbGciOi..." }
+```
+Returns a JWT (default expiry `8h`, configurable via `JWT_EXPIRES_IN`). Send it as `Authorization: Bearer <token>` on all `/api/admin/*` requests.
+
 ### Check Availability
 ```
 GET /api/appointments/availability?date=2026-02-10T00:00:00.000Z&serviceIds=1,2
@@ -130,6 +145,54 @@ This endpoint:
 
 ---
 
+## � Admin Endpoints
+
+All routes below are mounted under `/api/admin` and require a valid JWT (`Authorization: Bearer <token>`), enforced by `middleware/auth.middleware.ts`.
+
+### List Appointments
+```
+GET /api/admin/appointments?date=2026-02-10&status=completed&offset=0&limit=50
+```
+Optional filters: `date` (`YYYY-MM-DD`), `status` (`completed` | `cancelled`). Returns a paginated response:
+```json
+{ "totalRecords": 42, "offset": 0, "limit": 50, "appointments": [...] }
+```
+
+### Get Appointment Details
+```
+GET /api/admin/appointments/:id
+```
+Returns the appointment row plus its linked `services`.
+
+### Reschedule / Edit Appointment
+```
+PUT /api/admin/appointments/:id
+```
+**Body:**
+```json
+{
+  "date": "2026-02-10",
+  "timeSlot": "14:00",
+  "services": [{ "id": 1, "name": "Classic Manicure", "duration": "1h", "price": "$30" }],
+  "notes": "Optional notes"
+}
+```
+Recomputes `totalPrice`/`totalDurationMinutes` from the submitted services, rechecks slot availability (excluding the appointment being edited), then replaces the appointment's date/time/services.
+
+### Update Status
+```
+PATCH /api/admin/appointments/:id/status
+```
+**Body:** `{ "status": "completed" | "cancelled" }`
+
+### Cancel Appointment
+```
+DELETE /api/admin/appointments/:id
+```
+Sets `status = 'cancelled'`. Unlike the (removed) customer-facing cancellation, admins are not subject to a 12-hour cutoff.
+
+---
+
 ## 🗄️ Database (Supabase)
 
 The API uses Supabase (PostgreSQL). See `db/SCHEMA.md` for the full SQL schema.
@@ -139,9 +202,16 @@ The API uses Supabase (PostgreSQL). See `db/SCHEMA.md` for the full SQL schema.
 - `appointment_services` — junction table linking appointments to their services
 
 **Implemented helpers (`db/supabase.ts`):**
-- `checkTimeSlotAvailability(date, startTime, endTime)` — checks for overlapping bookings
+- `checkTimeSlotAvailability(date, startTime, endTime, excludeAppointmentId?)` — checks for overlapping bookings; the optional `excludeAppointmentId` skips the appointment being edited
+- `getBookedSlotsForDate(date)` — fetches all booked time ranges for a date in a single query (used by the availability endpoint)
 - `createAppointment(data)` — inserts a new appointment row
 - `createAppointmentServices(services)` — inserts the associated service rows
+- `getAppointmentById(id)` / `getAppointmentServices(id)` — fetch a single appointment and its services (admin)
+- `updateAppointmentStatus(id, status)` — sets `'completed'` or `'cancelled'` (admin)
+- `updateAppointmentDetails(id, updates)` — updates date/time/notes/totals (admin reschedule)
+- `replaceAppointmentServices(id, services)` — deletes and re-inserts an appointment's services (admin edit)
+
+See `db/helper-Insert-Apppointment.sql` for a standalone SQL script used to bulk-block whole days (inserts `'blocked by admin'` appointments) directly in Supabase — there is no API endpoint for this.
 
 ---
 
@@ -164,6 +234,14 @@ Create `api/.env`:
 PORT=3001
 NODE_ENV=development
 FRONTEND_URL=http://localhost:4200
+
+# JWT Configuration
+JWT_SECRET=your_jwt_secret_key_here_change_in_production
+JWT_EXPIRES_IN=1h
+
+# Admin Login (single admin user)
+ADMIN_USERNAME=user
+ADMIN_PASSWORD_HASH=your_bcrypt_hash
 
 # Supabase
 SUPABASE_URL=your_supabase_url
@@ -196,13 +274,23 @@ Set the environment variables above in the Netlify dashboard under **Site settin
 ```
 api/
 ├── server.ts                  # Express app + CORS + middleware
+├── auth/
+│   └── index.ts               # POST /login — issues JWT for the admin user
+├── admin/
+│   ├── index.ts                # Protected CRUD routes for managing appointments
+│   └── admin-routes.postman_collection.json
 ├── appointments/
 │   └── index.ts               # GET /availability and POST / routes
+├── middleware/
+│   └── auth.middleware.ts     # requireAuth — verifies JWT on /api/admin/* routes
 ├── email/
 │   └── email.service.ts       # Nodemailer Gmail SMTP
 ├── db/
 │   ├── supabase.ts            # Supabase client and query helpers
+│   ├── helper-Insert-Apppointment.sql  # Manual script to bulk-block days
 │   └── SCHEMA.md              # PostgreSQL schema (appointments + appointment_services)
+├── types/
+│   └── paginated.ts           # IPaginated interface used by admin list endpoint
 ├── utils/
 │   └── time.utils.ts          # calculateEndTime()
 ├── tsconfig.json
@@ -221,3 +309,5 @@ netlify/
 - Input validation on all POST /appointments fields
 - Time-slot conflict re-checked at write time (optimistic concurrency)
 - Credentials stored in environment variables only
+- `/api/admin/*` routes require a valid JWT (`requireAuth` middleware); admin login password is stored as a bcrypt hash, never in plaintext
+- Non-`GET` requests must send `Content-Type: application/json`

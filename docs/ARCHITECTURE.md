@@ -12,18 +12,24 @@
 │  │   Component      │  │  Step 1: Service Selection                      │ │
 │  └──────────────────┘  │  Step 2: Date & Time Selection                  │ │
 │                        │  Step 3: User Information                       │ │
-│                        │  Step 4: Confirmation                           │ │
-│                        └─────────────────────────────────────────────────┘ │
+│  ┌──────────────────┐  │  Step 4: Confirmation                           │ │
+│  │  Admin Login      │  └─────────────────────────────────────────────────┘ │
+│  │  + Dashboard      │                                                     │
+│  │  (auth-guarded)   │                                                     │
+│  └──────────────────┘                                                     │
 │                                                                             │
 │  ┌─────────────────────────────────────────────────────────────────────┐   │
 │  │                     Angular Services Layer                          │   │
 │  │  • AppointmentService (HTTP calls to API)                           │   │
 │  │  • SpamProtectionService (client-side rate limiting)                │   │
+│  │  • AuthService (JWT login/logout, token storage)                    │   │
+│  │  • AdminService (list/get/update/cancel appointments)                │   │
 │  └─────────────────────────────────────────────────────────────────────┘   │
 │                                                                             │
 └────────────────────────────────────┬────────────────────────────────────────┘
                                      │
                                      │ HTTPS / API calls (/api/*)
+                                     │ Authorization: Bearer <JWT> for /api/admin/*
                                      │
 ┌────────────────────────────────────▼────────────────────────────────────────┐
 │                    BACKEND LAYER (Express.js + TypeScript)                  │
@@ -32,14 +38,21 @@
 │                                                                             │
 │  ┌──────────────────────────────────────────────────────────────────────┐  │
 │  │  GET  /api/health                  — health check                    │  │
+│  │  POST /api/auth/login              — admin login, issues JWT         │  │
 │  │  GET  /api/appointments/availability — time-slot availability        │  │
 │  │  POST /api/appointments            — create & persist appointment    │  │
+│  │  GET  /api/admin/appointments       — list (paginated, filterable)    │  │
+│  │  GET  /api/admin/appointments/:id   — get one appointment + services  │  │
+│  │  PUT  /api/admin/appointments/:id   — reschedule / edit services      │  │
+│  │  PATCH /api/admin/appointments/:id/status — mark completed/cancelled │  │
+│  │  DELETE /api/admin/appointments/:id — cancel (admin, no time cutoff) │  │
 │  └──────────────────────────────────────────────────────────────────────┘  │
 │                                                                             │
 │  ┌─────────────────────────────────────────────────────────────────────┐   │
 │  │                     Middleware                                       │   │
 │  │  • CORS (localhost + Netlify subdomains)                             │   │
 │  │  • express.json / urlencoded body parsing                           │   │
+│  │  • requireAuth — verifies JWT on all /api/admin/* routes             │   │
 │  │  • 404 and error-handler middleware                                  │   │
 │  └─────────────────────────────────────────────────────────────────────┘   │
 │                                                                             │
@@ -90,6 +103,21 @@
 - Edit buttons to jump back to any previous step
 - Submits via `POST /api/appointments` and shows a success screen
 
+#### Admin Login (`src/app/pages/admin/login`)
+- Username/password form, calls `AuthService.login()` (`POST /api/auth/login`)
+- On success, stores the returned JWT and redirects to the admin dashboard
+
+#### Admin Dashboard (`src/app/pages/admin/dashboard`)
+- Route-guarded by `authGuard` (redirects to `/admin/login` when not authenticated)
+- Lists appointments via `AdminService.getAppointments()` with filters (date, status) and pagination (`MatPaginatorModule`)
+- Mark an appointment completed/cancelled (`PATCH /status`), cancel it (`DELETE`), or open the edit dialog
+- Uses `MatDialog` to open `EditAppointmentDialogComponent` for rescheduling
+
+#### Edit Appointment Dialog (`src/app/pages/admin/edit-appointment-dialog`)
+- `MatDialog` component pre-filled with the selected appointment's date, time slot, services and notes
+- Lets the admin change the date/time and the selected services from `NAIL_SERVICE_CATALOG`
+- Submits via `AdminService.updateAppointment()` (`PUT /api/admin/appointments/:id`)
+
 #### Angular Services
 
 **AppointmentService** (`src/app/services/appointment.service.ts`)
@@ -101,6 +129,19 @@
 - 30-second minimum cooldown between submissions
 - LocalStorage-based tracking
 
+**AuthService** (`src/app/services/auth.service.ts`)
+- `login(username, password)` → `POST /api/auth/login`, stores JWT in `localStorage` (signal-based state)
+- `logout()`, `getToken()`, `isAuthenticated()`
+
+**AdminService** (`src/app/services/admin.service.ts`)
+- `getAppointments(options)` → `GET /api/admin/appointments` (paginated, filterable by date/status)
+- `getAppointmentById(id)`, `updateStatus(id, status)`, `updateAppointment(id, payload)`, `cancelAppointment(id)`
+
+#### Route Protection
+
+- `authGuard` (`src/app/guards/auth.guard.ts`) — `CanActivateFn` that blocks access to `/admin` unless `AuthService.isAuthenticated()` is true
+- `authInterceptor` (`src/app/interceptors/auth.interceptor.ts`) — attaches `Authorization: Bearer <token>` to every request whose URL includes `/api/admin`, and logs out + redirects to `/admin/login` on a `401` response
+
 ---
 
 ### 2. Backend API (Express.js + TypeScript)
@@ -110,10 +151,15 @@ Runs locally on port 3001. In production, wrapped by `netlify/functions/api.ts` 
 #### `GET /api/health`
 Returns `{ status, timestamp, environment }`.
 
+#### `POST /api/auth/login`
+- Validates `username`/`password` against `ADMIN_USERNAME` and the bcrypt hash in `ADMIN_PASSWORD_HASH`
+- Always runs `bcrypt.compare` (even on unknown usernames) to avoid timing-based user enumeration
+- Returns a signed JWT (`JWT_SECRET`, expiry `JWT_EXPIRES_IN`, default `1h`)
+
 #### `GET /api/appointments/availability`
 - Validates date (not Sunday, not past)
 - Generates 30-minute slots within business hours
-- Filters each slot against Supabase via `checkTimeSlotAvailability()`
+- Fetches all booked slots for the date in one query (`getBookedSlotsForDate()`) and checks overlap in memory
 - Falls back to "available" if the database is unreachable
 
 #### `POST /api/appointments`
@@ -124,6 +170,15 @@ Returns `{ status, timestamp, environment }`.
 5. Saves service rows via `createAppointmentServices()`
 6. Calls `sendAllNotifications()` (awaited — required for serverless)
 7. Returns the created appointment
+
+#### Admin routes (`/api/admin/*`) — all protected by `requireAuth`
+| Route | Purpose |
+|---|---|
+| `GET /appointments` | Paginated list, optional `date`/`status` filters |
+| `GET /appointments/:id` | Single appointment + its services |
+| `PUT /appointments/:id` | Reschedule date/time and/or replace services; totals recomputed server-side; rechecks availability excluding itself |
+| `PATCH /appointments/:id/status` | Set `'completed'` or `'cancelled'` |
+| `DELETE /appointments/:id` | Cancel (no 12-hour cutoff, unlike a customer-initiated cancellation) |
 
 ---
 
@@ -152,9 +207,16 @@ Schema defined in `api/db/SCHEMA.md`.
 Junction table linking one appointment to its selected services (appointment_id FK → appointments.id CASCADE).
 
 **Implemented query helpers (`api/db/supabase.ts`)**
-- `checkTimeSlotAvailability(date, startTime, endTime)` — overlap query
+- `checkTimeSlotAvailability(date, startTime, endTime, excludeAppointmentId?)` — overlap query, can exclude the appointment being edited
+- `getBookedSlotsForDate(date)` — fetches all booked ranges for a date in one query
 - `createAppointment(data)` — insert + returning
 - `createAppointmentServices(services[])` — bulk insert
+- `getAppointmentById(id)` / `getAppointmentServices(id)` — admin lookups
+- `updateAppointmentStatus(id, status)` — admin status change
+- `updateAppointmentDetails(id, updates)` — admin reschedule (date/time/notes/totals)
+- `replaceAppointmentServices(id, services)` — delete + re-insert an appointment's services
+
+Days can also be bulk-blocked directly in Supabase using the standalone script `api/db/helper-Insert-Apppointment.sql` (inserts `'blocked by admin'` appointments) — there is no API endpoint for this.
 
 ---
 
@@ -191,6 +253,7 @@ All `/api/*` requests are redirected to the serverless function via `netlify.tom
 | Backend | Node.js 20+, Express.js, TypeScript |
 | Database | Supabase (PostgreSQL) |
 | Email | Nodemailer with Gmail SMTP |
+| Auth | JWT (`jsonwebtoken`) + bcrypt password hashing (`bcryptjs`) |
 | Hosting | Netlify (frontend + serverless functions) |
 
 ---
@@ -201,4 +264,7 @@ All `/api/*` requests are redirected to the serverless function via `netlify.tom
 - Input validation on all `POST /appointments` required fields
 - Time-slot conflict re-checked at write time
 - Credentials stored in environment variables only (never committed)
+- Admin password stored as a bcrypt hash (`ADMIN_PASSWORD_HASH`); login always runs `bcrypt.compare` to avoid timing-based user enumeration
+- `/api/admin/*` routes require a valid JWT, verified by the `requireAuth` middleware; the Angular `authInterceptor` attaches the token and the `authGuard` blocks unauthenticated access to `/admin`
+- Non-`GET` requests must send `Content-Type: application/json`
 
