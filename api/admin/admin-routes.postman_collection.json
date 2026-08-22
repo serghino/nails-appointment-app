@@ -1,0 +1,198 @@
+{
+  "info": {
+    "name": "Nails Appointment - Admin Routes",
+    "description": "Collection to test the admin API routes. Run \"Auth - Login\" first to populate the {{token}} variable used by all admin requests.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3001",
+      "type": "string"
+    },
+    {
+      "key": "username",
+      "value": "admin",
+      "type": "string"
+    },
+    {
+      "key": "password",
+      "value": "your-admin-password",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "appointmentId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "date",
+      "value": "2026-07-14",
+      "type": "string"
+    },
+    {
+      "key": "status",
+      "value": "completed",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth - Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "const json = pm.response.json();",
+              "if (json.token) {",
+              "    pm.collectionVariables.set('token', json.token);",
+              "    console.log('Token saved to collection variable {{token}}');",
+              "} else {",
+              "    console.warn('No token returned from login');",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/login",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "login"]
+        },
+        "description": "Authenticate as admin and receive a JWT. The token is automatically stored in the {{token}} collection variable by the test script."
+      }
+    },
+    {
+      "name": "GET All Appointments",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/admin/appointments",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "admin", "appointments"]
+        },
+        "description": "List all appointments. No body required."
+      }
+    },
+    {
+      "name": "GET Appointments (filtered)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/admin/appointments?date={{date}}&status={{status}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "admin", "appointments"],
+          "query": [
+            {
+              "key": "date",
+              "value": "{{date}}",
+              "description": "Optional filter: YYYY-MM-DD"
+            },
+            {
+              "key": "status",
+              "value": "{{status}}",
+              "description": "Optional filter: completed | cancelled"
+            }
+          ]
+        },
+        "description": "List appointments filtered by date and/or status query params."
+      }
+    },
+    {
+      "name": "GET Appointment by ID",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/admin/appointments/{{appointmentId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "admin", "appointments", "{{appointmentId}}"]
+        },
+        "description": "Get a single appointment with its services. Set {{appointmentId}} first."
+      }
+    },
+    {
+      "name": "PATCH Appointment Status",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"completed\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/admin/appointments/{{appointmentId}}/status",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "admin", "appointments", "{{appointmentId}}", "status"]
+        },
+        "description": "Update appointment status. Body status must be 'completed' or 'cancelled'."
+      }
+    },
+    {
+      "name": "DELETE Appointment (cancel)",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/admin/appointments/{{appointmentId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "admin", "appointments", "{{appointmentId}}"]
+        },
+        "description": "Cancel an appointment (sets status = 'cancelled'). No body required."
+      }
+    }
+  ]
+}

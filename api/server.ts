@@ -3,6 +3,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import appointmentsRouter from './appointments/index';
+import authRouter from './auth/index';
+import adminRouter from './admin/index';
 
 // Load environment variables for local development (no-op in production where vars come from Netlify)
 dotenv.config({ path: path.join(process.cwd(), 'api', '.env') });
@@ -13,6 +15,17 @@ const PORT = process.env['PORT'] || 3001;
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Require Content-Type: application/json for all mutating requests
+app.use((req: Request, res: Response, next: any) => {
+  if (['POST', 'PUT', 'PATCH'].includes(req.method)) {
+    if (!req.is('application/json')) {
+      res.status(415).json({ error: 'Content-Type must be application/json' });
+      return;
+    }
+  }
+  next();
+});
 
 // CORS configuration — allow localhost for dev and any Netlify subdomain for all deploy contexts
 const allowedOrigins = [
@@ -44,6 +57,8 @@ app.get('/api/health', (req: Request, res: Response) => {
 });
 
 // API Routes
+app.use('/api/auth', authRouter);
+app.use('/api/admin', adminRouter);
 app.use('/api/appointments', appointmentsRouter);
 
 // 404 handler

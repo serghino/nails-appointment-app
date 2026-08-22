@@ -1,0 +1,151 @@
+<div class="admin-dashboard-container">
+  <div class="dashboard-header">
+    <div>
+      <h1>Appointments</h1>
+      <p>Manage bookings — review, update, or cancel appointments</p>
+    </div>
+    <button mat-stroked-button (click)="logout()" class="logout-button">
+      <mat-icon>logout</mat-icon>
+      Logout
+    </button>
+  </div>
+
+  <form [formGroup]="filterForm" class="filters">
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-label>Date</mat-label>
+      <input matInput [matDatepicker]="picker" formControlName="date">
+      <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+      <mat-datepicker #picker></mat-datepicker>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-label>Status</mat-label>
+      <mat-select formControlName="status">
+        <mat-option value="">All</mat-option>
+        <mat-option value="completed">Completed</mat-option>
+        <mat-option value="cancelled">Cancelled</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <button mat-button type="button" (click)="clearFilters()" class="clear-button">
+      <mat-icon>clear</mat-icon>
+      Clear
+    </button>
+  </form>
+
+  @if (isLoading()) {
+    <div class="loading-state">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+  } @else if (appointments().length === 0) {
+    <div class="empty-state">
+      <mat-icon>event_busy</mat-icon>
+      <p>No appointments found</p>
+    </div>
+  } @else {
+    <div class="appointments-list">
+      @for (appointment of appointments(); track appointment.id) {
+        <div class="appointment-card" [class.expanded]="expandedId() === appointment.id">
+          <div class="card-summary" (click)="toggleExpand(appointment.id)">
+            <div class="summary-main">
+              <div class="date-time">
+                <mat-icon>event</mat-icon>
+                <span>{{ appointment.appointment_date }} • {{ appointment.appointment_time }}</span>
+              </div>
+              <div class="customer">
+                <mat-icon>person</mat-icon>
+                <span>{{ appointment.customer_name }} {{ appointment.customer_lastname }}</span>
+              </div>
+            </div>
+            <div class="summary-side">
+              <mat-chip-set>
+                <mat-chip [class]="'status-chip status-' + appointment.status">
+                  {{ appointment.status === 'completed' ? 'Completed' : 'Cancelled' }}
+                </mat-chip>
+              </mat-chip-set>
+              <span class="price">${{ appointment.total_price }}</span>
+              <mat-icon class="expand-icon">{{ expandedId() === appointment.id ? 'expand_less' : 'expand_more' }}</mat-icon>
+            </div>
+          </div>
+
+          @if (expandedId() === appointment.id) {
+            <div class="card-details">
+              <div class="detail-group">
+                <span class="label">Phone</span>
+                <span class="value">{{ appointment.customer_telephone }}</span>
+              </div>
+              @if (appointment.customer_email) {
+                <div class="detail-group">
+                  <span class="label">Email</span>
+                  <span class="value">{{ appointment.customer_email }}</span>
+                </div>
+              }
+              <div class="detail-group">
+                <span class="label">Duration</span>
+                <span class="value">{{ appointment.total_duration_minutes }} min ({{ appointment.appointment_time }} - {{ appointment.end_time }})</span>
+              </div>
+              @if (appointment.notes) {
+                <div class="detail-group">
+                  <span class="label">Notes</span>
+                  <span class="value">{{ appointment.notes }}</span>
+                </div>
+              }
+
+              @if (appointment.appointment_services?.length) {
+                <div class="services-group">
+                  <span class="label">Services</span>
+                  <div class="services-list">
+                    @for (service of appointment.appointment_services; track service.service_id) {
+                      <div class="service-item">
+                        <span>{{ service.service_name }}</span>
+                        <span>{{ service.service_duration }} • {{ service.service_price }}</span>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+
+              <div class="card-actions">
+                <button
+                  mat-stroked-button
+                  [disabled]="processingId() === appointment.id"
+                  (click)="openEditDialog(appointment)">
+                  <mat-icon>edit</mat-icon>
+                  Edit
+                </button>
+                @if (appointment.status !== 'completed') {
+                  <button
+                    mat-stroked-button
+                    color="primary"
+                    [disabled]="processingId() === appointment.id"
+                    (click)="markCompleted(appointment)">
+                    <mat-icon>check_circle</mat-icon>
+                    Mark Completed
+                  </button>
+                }
+                @if (appointment.status !== 'cancelled') {
+                  <button
+                    mat-stroked-button
+                    color="warn"
+                    [disabled]="processingId() === appointment.id"
+                    (click)="cancelAppointment(appointment)">
+                    <mat-icon>cancel</mat-icon>
+                    Cancel
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <mat-paginator
+      [length]="totalRecords()"
+      [pageSize]="pageSize()"
+      [pageIndex]="pageIndex()"
+      [pageSizeOptions]="[10, 25, 50]"
+      (page)="onPageChange($event)">
+    </mat-paginator>
+  }
+</div>
