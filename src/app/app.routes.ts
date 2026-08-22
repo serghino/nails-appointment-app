@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
 import { Home } from './pages/home/home';
-import { AppointmentsComponent } from './pages/appointments/appointments';
 import { authGuard } from './guards/auth.guard';
 import ROUTES from './models/routes';
 
@@ -12,7 +11,8 @@ export const routes: Routes = [
   },
   {
     path: ROUTES.appointments,
-    component: AppointmentsComponent,
+    loadComponent: () =>
+      import('./pages/appointments/appointments').then(m => m.AppointmentsComponent),
     title: 'Book Appointment - Nail Salon Montreal'
   },
   {
