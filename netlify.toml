@@ -8,6 +8,17 @@
   directory = "netlify/functions"
   node_bundler = "esbuild"
 
+# Must precede the catch-all /api/* rule below (first match wins)
+[[redirects]]
+  from = "/api/auth/login"
+  to = "/.netlify/functions/api/auth/login"
+  status = 200
+  force = true
+  [redirects.rate_limit]
+  window_limit = 5
+  window_size = 60
+  aggregate_by = ["ip", "domain"]
+
 # Route all /api/* requests to the Express Netlify Function
 [[redirects]]
   from = "/api/*"
